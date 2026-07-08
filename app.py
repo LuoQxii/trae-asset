@@ -325,10 +325,6 @@ def add_account():
     db = get_db()
     db.execute("INSERT INTO accounts (id, user_id, name, type, amount, created_at) VALUES (?, ?, ?, ?, ?, ?)",
                (acc_id, user_id, name, acc_type, amount, now))
-    # 自动生成初始存量本金记录
-    if amount > 0:
-        db.execute("INSERT INTO principals (id, user_id, account_id, amount, source_type, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                   (str(uuid.uuid4()), user_id, acc_id, amount, 'initial', '初始存量资金', now))
     db.commit()
     record_snapshot(user_id)
     return jsonify({'success': True, 'message': '账户添加成功',
