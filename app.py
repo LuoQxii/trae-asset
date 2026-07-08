@@ -1,5 +1,5 @@
 """
-个人多账户资产管理系统 - 后端 Flask API v3.0
+个人多账户资产管理系统 - 后端 Flask API v3.1
 SQLite 数据库 + 本金/收益双台账体系
 """
 import os
@@ -9,10 +9,16 @@ import hashlib
 from datetime import datetime
 from collections import OrderedDict
 from flask import Flask, request, jsonify, send_from_directory, g
-from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+
+# 手动 CORS 处理，无需 flask-cors 依赖
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    return response
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
