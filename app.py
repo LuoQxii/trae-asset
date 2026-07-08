@@ -834,8 +834,10 @@ def serve_index():
 def serve_static(filename):
     return send_from_directory('static', filename)
 
+# 模块级初始化：确保 PythonAnywhere WSGI 导入时也执行
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     print('=' * 50)
     print('  个人多账户资产管理系统 v3.0 (SQLite)')
     print('  访问 http://localhost:5000')
