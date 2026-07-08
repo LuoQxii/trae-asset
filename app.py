@@ -92,7 +92,72 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_returns_account ON returns(account_id);
         CREATE INDEX IF NOT EXISTS idx_transfers_user ON transfers(user_id);
         CREATE INDEX IF NOT EXISTS idx_snapshots_user ON snapshots(user_id);
+        CREATE TABLE IF NOT EXISTS dict_items (
+            id TEXT PRIMARY KEY, user_id TEXT NOT NULL,
+            dict_type TEXT NOT NULL,
+            label TEXT NOT NULL, value TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0, created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_dict_items_user_type ON dict_items(user_id, dict_type);
     """)
+
+    # ---- 迁移逻辑：为 principals / returns 添加 record_date 列 ----
+    # 检查 principals 表是否有 record_date 列
+    cols = [r[1] for r in db.execute("PRAGMA table_info(principals)").fetchall()]
+    if 'record_date' not in cols:
+        db.execute("ALTER TABLE principals ADD COLUMN record_date TEXT DEFAULT ''")
+        db.execute("UPDATE principals SET record_date = substr(created_at, 1, 10) WHERE record_date = '' OR record_date IS NULL")
+        db.commit()
+
+    # 检查 returns 表是否有 record_date 列
+    cols = [r[1] for r in db.execute("PRAGMA table_info(returns)").fetchall()]
+    if 'record_date' not in cols:
+        db.execute("ALTER TABLE returns ADD COLUMN record_date TEXT DEFAULT ''")
+        db.execute("UPDATE returns SET record_date = substr(created_at, 1, 10) WHERE record_date = '' OR record_date IS NULL")
+        db.commit()
+
+    # ---- 插入默认字典数据（仅在表为空时） ----
+    existing_dicts = db.execute("SELECT COUNT(*) FROM dict_items").fetchone()[0]
+    if existing_dicts == 0:
+        now_iso = datetime.now().isoformat()
+        default_dicts = [
+            # account_type
+            ('account_type', 'bank', '银行存款', 1),
+            ('account_type', 'fund', '基金理财', 2),
+            ('account_type', 'stock', '股票账户', 3),
+            ('account_type', 'cash', '现金零钱', 4),
+            ('account_type', 'debt', '信贷负债', 5),
+            # principal_source
+            ('principal_source', 'initial', '初始存量', 1),
+            ('principal_source', 'salary', '工资收入', 2),
+            ('principal_source', 'side_income', '兼职收入', 3),
+            ('principal_source', 'red_packet', '红包', 4),
+            ('principal_source', 'gift', '馈赠', 5),
+            ('principal_source', 'transfer', '账户划转', 6),
+            ('principal_source', 'spend', '消费支出', 7),
+            ('principal_source', 'other', '其他', 8),
+            # return_type
+            ('return_type', 'fund_dividend', '基金分红', 1),
+            ('return_type', 'interest', '理财利息', 2),
+            ('return_type', 'stock_gain', '股票浮盈', 3),
+            ('return_type', 'deposit_interest', '存款利息', 4),
+            ('return_type', 'fund_loss', '理财亏损', 5),
+            ('return_type', 'stock_loss', '股票浮亏', 6),
+            # transfer_type
+            ('transfer_type', 'cash_transfer', '现金互转', 1),
+            ('transfer_type', 'cash_to_fund', '现金转理财', 2),
+            ('transfer_type', 'fund_to_cash', '理财转现金', 3),
+            ('transfer_type', 'fund_transfer', '理财互转', 4),
+        ]
+        # 为系统默认字典使用固定 user_id '__system__'，与用户无关
+        system_user = '__system__'
+        for dict_type, value, label, sort_order in default_dicts:
+            db.execute(
+                "INSERT OR IGNORE INTO dict_items (id, user_id, dict_type, label, value, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (str(uuid.uuid4()), system_user, dict_type, label, value, sort_order, now_iso)
+            )
+        db.commit()
+
     db.commit()
     db.close()
 
@@ -292,9 +357,9 @@ def delete_account(acc_id):
     db = get_db()
     acc = db.execute("SELECT * FROM accounts WHERE id=?", (acc_id,)).fetchone()
     user_id = acc['user_id'] if acc else ''
-    db.execute("DELETE FROM accounts WHERE id=?", (acc_id,))
     db.execute("DELETE FROM principals WHERE account_id=?", (acc_id,))
     db.execute("DELETE FROM returns WHERE account_id=?", (acc_id,))
+    db.execute("DELETE FROM accounts WHERE id=?", (acc_id,))
     db.commit()
     if user_id:
         record_snapshot(user_id)
@@ -317,12 +382,12 @@ def get_principals():
         query += " AND p.source_type=?"
         params.append(source_type)
     if start_date:
-        query += " AND p.created_at>=?"
+        query += " AND p.record_date>=?"
         params.append(start_date)
     if end_date:
-        query += " AND p.created_at<=?"
-        params.append(end_date + 'T23:59:59')
-    query += " ORDER BY p.created_at DESC"
+        query += " AND p.record_date<=?"
+        params.append(end_date)
+    query += " ORDER BY p.record_date DESC, p.created_at DESC"
     principals = db.execute(query, params).fetchall()
     return jsonify({'success': True, 'principals': rows_to_list(principals)})
 
@@ -349,13 +414,14 @@ def add_principal():
 
     pid = str(uuid.uuid4())
     now = datetime.now().isoformat()
-    db.execute("INSERT INTO principals (id, user_id, account_id, amount, source_type, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-               (pid, user_id, account_id, amount, source_type, note, now))
+    record_date = data.get('record_date', datetime.now().strftime('%Y-%m-%d'))
+    db.execute("INSERT INTO principals (id, user_id, account_id, amount, source_type, note, created_at, record_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+               (pid, user_id, account_id, amount, source_type, note, now, record_date))
     db.commit()
     record_snapshot(user_id)
     return jsonify({'success': True, 'message': '本金录入成功',
                     'principal': {'id': pid, 'user_id': user_id, 'account_id': account_id,
-                                  'amount': amount, 'source_type': source_type, 'note': note, 'created_at': now}})
+                                  'amount': amount, 'source_type': source_type, 'note': note, 'created_at': now, 'record_date': record_date}})
 
 @app.route('/api/principals/<p_id>', methods=['DELETE'])
 def delete_principal(p_id):
@@ -383,7 +449,7 @@ def get_returns():
     if account_id:
         query += " AND r.account_id=?"
         params.append(account_id)
-    query += " ORDER BY r.created_at DESC"
+    query += " ORDER BY r.record_date DESC, r.created_at DESC"
     returns = db.execute(query, params).fetchall()
     return jsonify({'success': True, 'returns': rows_to_list(returns)})
 
@@ -402,14 +468,15 @@ def add_return():
 
     rid = str(uuid.uuid4())
     now = datetime.now().isoformat()
+    record_date = data.get('record_date', datetime.now().strftime('%Y-%m-%d'))
     db = get_db()
-    db.execute("INSERT INTO returns (id, user_id, account_id, amount, return_type, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-               (rid, user_id, account_id, amount, return_type, note, now))
+    db.execute("INSERT INTO returns (id, user_id, account_id, amount, return_type, note, created_at, record_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+               (rid, user_id, account_id, amount, return_type, note, now, record_date))
     db.commit()
     record_snapshot(user_id)
     return jsonify({'success': True, 'message': '收益录入成功',
                     'return': {'id': rid, 'user_id': user_id, 'account_id': account_id,
-                               'amount': amount, 'return_type': return_type, 'note': note, 'created_at': now}})
+                               'amount': amount, 'return_type': return_type, 'note': note, 'created_at': now, 'record_date': record_date}})
 
 @app.route('/api/returns/<ret_id>', methods=['DELETE'])
 def delete_return(ret_id):
@@ -537,6 +604,194 @@ def get_stats():
         return jsonify({'success': False, 'message': '缺少 user_id'}), 400
     stats = calc_stats(user_id)
     return jsonify({'success': True, 'stats': stats})
+
+# ========== 数据字典 API ==========
+@app.route('/api/dicts', methods=['GET'])
+def get_dicts():
+    user_id = request.args.get('user_id', '')
+    dict_type = request.args.get('dict_type', '')
+    db = get_db()
+    query = "SELECT * FROM dict_items WHERE 1=1"
+    params = []
+    # 字典查询支持系统默认 + 用户自定义，如果传了 user_id 则同时查系统默认和用户自定义
+    if user_id:
+        query += " AND (user_id=? OR user_id='__system__')"
+        params.append(user_id)
+    if dict_type:
+        query += " AND dict_type=?"
+        params.append(dict_type)
+    query += " ORDER BY sort_order ASC, created_at ASC"
+    items = db.execute(query, params).fetchall()
+    return jsonify({'success': True, 'items': rows_to_list(items)})
+
+@app.route('/api/dicts', methods=['POST'])
+def add_dict():
+    data = request.get_json()
+    user_id = data.get('user_id', '')
+    dict_type = data.get('dict_type', '')
+    label = data.get('label', '').strip()
+    value = data.get('value', '').strip()
+    if not user_id or not dict_type or not label or not value:
+        return jsonify({'success': False, 'message': '缺少必填字段'}), 400
+    did = str(uuid.uuid4())
+    now = datetime.now().isoformat()
+    db = get_db()
+    db.execute("INSERT INTO dict_items (id, user_id, dict_type, label, value, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+               (did, user_id, dict_type, label, value, 0, now))
+    db.commit()
+    return jsonify({'success': True, 'message': '字典项添加成功',
+                    'item': {'id': did, 'user_id': user_id, 'dict_type': dict_type, 'label': label, 'value': value, 'sort_order': 0, 'created_at': now}})
+
+@app.route('/api/dicts/<did>', methods=['PUT'])
+def update_dict(did):
+    data = request.get_json()
+    db = get_db()
+    d = db.execute("SELECT * FROM dict_items WHERE id=?", (did,)).fetchone()
+    if not d:
+        return jsonify({'success': False, 'message': '字典项不存在'}), 404
+    updates = []
+    params = []
+    if 'label' in data:
+        updates.append("label=?")
+        params.append(data['label'].strip())
+    if 'value' in data:
+        updates.append("value=?")
+        params.append(data['value'].strip())
+    if 'sort_order' in data:
+        updates.append("sort_order=?")
+        params.append(int(data['sort_order']))
+    if updates:
+        params.append(did)
+        db.execute(f"UPDATE dict_items SET {', '.join(updates)} WHERE id=?", params)
+        db.commit()
+    d = db.execute("SELECT * FROM dict_items WHERE id=?", (did,)).fetchone()
+    return jsonify({'success': True, 'message': '更新成功', 'dict': row_to_dict(d)})
+
+@app.route('/api/dicts/<did>', methods=['DELETE'])
+def delete_dict(did):
+    db = get_db()
+    d = db.execute("SELECT * FROM dict_items WHERE id=?", (did,)).fetchone()
+    if not d:
+        return jsonify({'success': False, 'message': '字典项不存在'}), 404
+    db.execute("DELETE FROM dict_items WHERE id=?", (did,))
+    db.commit()
+    return jsonify({'success': True, 'message': '删除成功'})
+
+# ========== 重置数据 API ==========
+@app.route('/api/reset-data', methods=['POST'])
+def reset_data():
+    data = request.get_json()
+    user_id = data.get('user_id', '').strip()
+    if not user_id:
+        return jsonify({'success': False, 'message': '缺少 user_id'}), 400
+    db = get_db()
+    # 后端二次确认：检查用户是否存在
+    user = db.execute("SELECT id FROM users WHERE id=?", (user_id,)).fetchone()
+    if not user:
+        return jsonify({'success': False, 'message': '用户不存在'}), 404
+    # 记录重置操作日志（后端确认）
+    print(f"[RESET] 用户 {user_id} 请求重置数据，已确认执行")
+    # 删除所有账户、本金、收益、划转、快照数据，保留用户账号
+    db.execute("DELETE FROM transfers WHERE user_id=?", (user_id,))
+    db.execute("DELETE FROM returns WHERE user_id=?", (user_id,))
+    db.execute("DELETE FROM principals WHERE user_id=?", (user_id,))
+    db.execute("DELETE FROM accounts WHERE user_id=?", (user_id,))
+    db.execute("DELETE FROM snapshots WHERE user_id=?", (user_id,))
+    # 删除用户自定义字典（保留系统默认）
+    db.execute("DELETE FROM dict_items WHERE user_id=? AND user_id != '__system__'", (user_id,))
+    db.commit()
+    return jsonify({'success': True, 'message': '数据重置成功，所有账户、本金、收益、划转、快照数据已清除'})
+
+# ========== 单账户资产历史 API ==========
+@app.route('/api/accounts/<acc_id>/history', methods=['GET'])
+def get_account_history(acc_id):
+    user_id = request.args.get('user_id', '')
+    if not user_id or not acc_id:
+        return jsonify({'success': False, 'message': '缺少 user_id 或 acc_id'}), 400
+    db = get_db()
+    # 验证账户存在
+    acc = db.execute("SELECT * FROM accounts WHERE id=? AND user_id=?", (acc_id, user_id)).fetchone()
+    if not acc:
+        return jsonify({'success': False, 'message': '账户不存在'}), 404
+
+    # 获取该账户所有本金记录，按 record_date 排序
+    principals = db.execute(
+        "SELECT record_date, amount FROM principals WHERE account_id=? AND user_id=? ORDER BY record_date ASC, created_at ASC",
+        (acc_id, user_id)
+    ).fetchall()
+
+    # 获取该账户所有收益记录，按 record_date 排序
+    returns = db.execute(
+        "SELECT record_date, amount FROM returns WHERE account_id=? AND user_id=? ORDER BY record_date ASC, created_at ASC",
+        (acc_id, user_id)
+    ).fetchall()
+
+    # 构建日期范围：从有记录的最早日期到今天，最多30天
+    today = datetime.now().strftime('%Y-%m-%d')
+    all_dates = set()
+    for p in principals:
+        if p['record_date']:
+            all_dates.add(p['record_date'])
+    for r in returns:
+        if r['record_date']:
+            all_dates.add(r['record_date'])
+    all_dates.add(today)
+
+    if not all_dates:
+        return jsonify({'success': True, 'dates': [], 'principal_balance': [], 'return_cumulative': [], 'total': []})
+
+    min_date = min(all_dates)
+    max_date = min(today, max(all_dates))
+
+    # 生成日期序列（最多30天）
+    from datetime import timedelta
+    start_dt = datetime.strptime(min_date, '%Y-%m-%d')
+    end_dt = datetime.strptime(max_date, '%Y-%m-%d')
+    date_list = []
+    current = start_dt
+    while current <= end_dt:
+        date_list.append(current.strftime('%Y-%m-%d'))
+        current += timedelta(days=1)
+    # 只取最近30天
+    if len(date_list) > 30:
+        date_list = date_list[-30:]
+
+    # 按日期聚合本金
+    principal_by_date = {}
+    for p in principals:
+        d = p['record_date'] or ''
+        if not d:
+            continue
+        principal_by_date[d] = principal_by_date.get(d, 0) + p['amount']
+
+    # 按日期聚合收益
+    return_by_date = {}
+    for r in returns:
+        d = r['record_date'] or ''
+        if not d:
+            continue
+        return_by_date[d] = return_by_date.get(d, 0) + r['amount']
+
+    # 逐日累加
+    principal_balance_list = []
+    return_cumulative_list = []
+    total_list = []
+    cum_principal = 0.0
+    cum_return = 0.0
+    for d in date_list:
+        cum_principal += principal_by_date.get(d, 0)
+        cum_return += return_by_date.get(d, 0)
+        principal_balance_list.append(fmt(cum_principal))
+        return_cumulative_list.append(fmt(cum_return))
+        total_list.append(fmt(cum_principal + cum_return))
+
+    return jsonify({
+        'success': True,
+        'dates': date_list,
+        'principal_balance': principal_balance_list,
+        'return_cumulative': return_cumulative_list,
+        'total': total_list
+    })
 
 # ========== 静态文件 ==========
 @app.route('/')

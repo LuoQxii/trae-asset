@@ -104,16 +104,22 @@ input,select,button,textarea{font-family:inherit}
 .period-btn{padding:4px 12px;border:1px solid var(--rule);background:var(--bg2);color:var(--muted);border-radius:6px;font-size:0.8rem;cursor:pointer;transition:all .15s}
 .period-btn:hover{border-color:var(--accent);color:var(--accent)}
 .period-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* 修改1：移动端汉堡按钮遮挡修复 */
 @media(max-width:768px){
   .mobile-toggle{display:block!important}
   .sidebar{transform:translateX(-100%)}
   .sidebar.open{transform:translateX(0)}
-  .main-content{margin-left:0}
+  .main-content{margin-left:0;padding-top:52px}
   .page-body{padding:16px}
   .page-header{padding:16px}
   .charts-grid{grid-template-columns:1fr}
   .metrics-grid{grid-template-columns:1fr 1fr}
 }
+/* 账户选择器按钮条样式 */
+.acc-selector-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.acc-selector-bar .acc-btn{padding:8px 16px;border:2px solid var(--rule);background:var(--bg2);color:var(--muted);border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .2s}
+.acc-selector-bar .acc-btn:hover{border-color:var(--accent);color:var(--accent)}
+.acc-selector-bar .acc-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -133,7 +139,7 @@ input,select,button,textarea{font-family:inherit}
 
 <!-- ========== App ========== -->
 <div id="app-page" class="app-page">
-  <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+  <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
   <aside class="sidebar">
     <div class="logo">资产<span>管家</span></div>
     <nav>
@@ -179,24 +185,34 @@ input,select,button,textarea{font-family:inherit}
         <table class="data-table"><thead><tr><th>账户名称</th><th>类型</th><th>本金余额</th><th>操作</th></tr></thead><tbody id="accounts-tbody"></tbody></table>
       </div>
     </div>
-    <!-- Principals -->
+    <!-- Principals (修改6: 以账户为基准) -->
     <div id="page-principals" class="page">
-      <div class="page-header"><h2>本金台账</h2><div style="display:flex;gap:8px"><button class="btn btn-danger" onclick="openSpendModal()">- 本金支出</button><button class="btn btn-amber" onclick="openPrincipalModal()">+ 录入本金</button></div></div>
+      <div class="page-header"><h2>本金台账</h2></div>
       <div class="page-body">
-        <div class="filter-bar">
-          <select id="filter-source" onchange="loadPrincipals()"><option value="">全部来源</option><option value="initial">初始存量</option><option value="salary">工资收入</option><option value="side_income">兼职收入</option><option value="red_packet">红包</option><option value="gift">馈赠</option><option value="transfer">账户划转</option><option value="spend">消费支出</option><option value="other">其他</option></select>
+        <div class="acc-selector-bar" id="principal-acc-selector">
+          <!-- 动态填充账户按钮 -->
         </div>
-        <div class="table-header"><h3>本金变动记录</h3><span class="info" id="principal-count"></span></div>
-        <table class="data-table"><thead><tr><th>时间</th><th>目标账户</th><th>金额</th><th>来源类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="principals-tbody"></tbody></table>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button class="btn btn-amber" onclick="openPrincipalModal()">+ 收入</button>
+          <button class="btn btn-danger" onclick="openSpendModal()">- 支出</button>
+        </div>
+        <div class="table-header"><h3 id="principal-acc-title">请选择账户</h3><span class="info" id="principal-count"></span></div>
+        <table class="data-table"><thead><tr><th>日期</th><th>金额</th><th>来源类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="principals-tbody"></tbody></table>
         <div class="summary-box principal" id="principal-summary" style="display:none"><span id="principal-total-text"></span><div class="detail" id="principal-detail-text"></div></div>
       </div>
     </div>
-    <!-- Returns -->
+    <!-- Returns (修改6: 以账户为基准) -->
     <div id="page-returns" class="page">
-      <div class="page-header"><h2>收益台账</h2><span class="info">仅记录理财盈亏，支持新增和删除</span></div>
+      <div class="page-header"><h2>收益台账</h2></div>
       <div class="page-body">
-        <div class="table-header"><h3>收益记录</h3><span class="info" id="return-count"></span></div>
-        <table class="data-table"><thead><tr><th>时间</th><th>关联账户</th><th>金额</th><th>类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="returns-tbody"></tbody></table>
+        <div class="acc-selector-bar" id="return-acc-selector">
+          <!-- 动态填充账户按钮 -->
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button class="btn btn-success" onclick="openReturnModal()">+ 录入收益</button>
+        </div>
+        <div class="table-header"><h3 id="return-acc-title">请选择账户</h3><span class="info" id="return-count"></span></div>
+        <table class="data-table"><thead><tr><th>日期</th><th>金额</th><th>类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="returns-tbody"></tbody></table>
         <div class="summary-box return" id="return-summary" style="display:none"><span id="return-total-text"></span><div class="detail" id="return-detail-text"></div></div>
       </div>
     </div>
@@ -209,16 +225,32 @@ input,select,button,textarea{font-family:inherit}
         <div class="summary-box principal" id="transfer-summary" style="display:none;margin-top:20px"><span id="transfer-total-text"></span><div class="detail" id="transfer-detail-text"></div></div>
       </div>
     </div>
-    <!-- Settings -->
+    <!-- Settings (修改3+4: 数据字典管理 + 重置数据) -->
     <div id="page-settings" class="page">
       <div class="page-header"><h2>系统设置</h2></div>
       <div class="page-body">
+        <div class="chart-card" style="margin-bottom:20px">
+          <h3>数据字典管理</h3>
+          <p style="margin:8px 0;color:var(--muted);font-size:0.85rem">自定义账户类型、资金来源、收益类型、划转类型</p>
+          <div class="filter-bar" style="margin-top:12px">
+            <select id="dict-type-select" onchange="loadDictItems()">
+              <option value="account_type">账户类型</option>
+              <option value="principal_source">本金来源</option>
+              <option value="return_type">收益类型</option>
+              <option value="transfer_type">划转类型</option>
+            </select>
+            <input type="text" id="dict-label-input" placeholder="显示名称" style="flex:1;max-width:150px">
+            <input type="text" id="dict-value-input" placeholder="值(英文)" style="flex:1;max-width:150px">
+            <button class="btn btn-accent" onclick="saveDictItem()">添加</button>
+          </div>
+          <div id="dict-list" style="margin-top:12px"></div>
+        </div>
         <div class="chart-card">
           <h3>关于系统</h3>
           <p style="margin:12px 0;color:var(--muted);">个人多账户资产管理系统 v2.0 — 本金与收益双台账体系</p>
           <p style="margin:12px 0;color:var(--muted);">总资产 = 所有账户本金总和 + 全部理财累计盈亏</p>
           <p style="margin:12px 0;color:var(--muted);">持有收益率 = 累计理财收益 / 当前持仓本金</p>
-          <div style="margin-top:16px"><button class="btn btn-danger" onclick="alert('请手动删除 data/ 目录下的 JSON 文件来重置')">重置所有数据</button></div>
+          <div style="margin-top:16px"><button class="btn btn-danger" onclick="resetData()">重置所有数据</button></div>
         </div>
       </div>
     </div>
@@ -230,7 +262,7 @@ input,select,button,textarea{font-family:inherit}
   <div class="modal">
     <h3 id="acc-modal-title">添加账户</h3>
     <div class="form-group"><label>账户名称</label><input type="text" id="m-acc-name" placeholder="例如：招商银行"></div>
-    <div class="form-group"><label>账户类型</label><select id="m-acc-type"><option value="bank">银行存款</option><option value="fund">基金理财</option><option value="stock">股票账户</option><option value="cash">现金/零钱</option><option value="debt">信贷/负债</option></select></div>
+    <div class="form-group"><label>账户类型</label><select id="m-acc-type"></select></div>
     <div class="form-group"><label>初始本金（元）</label><input type="number" id="m-acc-amount" placeholder="0.00" step="0.01"></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('acc-modal')">取消</button><button class="btn btn-accent" onclick="saveAcc()">保存</button></div>
   </div>
@@ -238,9 +270,9 @@ input,select,button,textarea{font-family:inherit}
 <div class="modal-overlay" id="principal-modal">
   <div class="modal">
     <h3>录入本金</h3>
-    <div class="form-group"><label>目标账户</label><select id="m-pr-acc"></select></div>
+    <div class="form-group"><label>日期</label><input type="date" id="m-pr-date"></div>
     <div class="form-group"><label>金额（元）</label><input type="number" id="m-pr-amt" placeholder="0.00" step="0.01"></div>
-    <div class="form-group"><label>来源类型</label><select id="m-pr-src"><option value="salary">工资收入</option><option value="side_income">兼职收入</option><option value="red_packet">红包</option><option value="gift">馈赠</option><option value="transfer">账户划转</option><option value="other">其他</option></select></div>
+    <div class="form-group"><label>来源类型</label><select id="m-pr-src"></select></div>
     <div class="form-group"><label>备注（可选）</label><textarea id="m-pr-note" rows="2" placeholder="例如：7月份工资"></textarea></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('principal-modal')">取消</button><button class="btn btn-amber" onclick="savePrincipal()">确认录入</button></div>
   </div>
@@ -248,7 +280,7 @@ input,select,button,textarea{font-family:inherit}
 <div class="modal-overlay" id="spend-modal">
   <div class="modal">
     <h3>本金支出</h3>
-    <div class="form-group"><label>支出账户</label><select id="m-spend-acc"></select></div>
+    <div class="form-group"><label>日期</label><input type="date" id="m-spend-date"></div>
     <div class="form-group"><label>支出金额（元）</label><input type="number" id="m-spend-amt" placeholder="0.00" step="0.01"></div>
     <div class="form-group"><label>备注（可选）</label><textarea id="m-spend-note" rows="2" placeholder="例如：日常消费、转账给他人"></textarea></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('spend-modal')">取消</button><button class="btn btn-danger" onclick="saveSpend()">确认支出</button></div>
@@ -257,7 +289,7 @@ input,select,button,textarea{font-family:inherit}
 <div class="modal-overlay" id="transfer-modal">
   <div class="modal">
     <h3>资产内部划转</h3>
-    <div class="form-group"><label>划转类型</label><select id="m-tr-type" onchange="onTransferTypeChange()"><option value="cash_transfer">现金互转（银行卡 ↔ 零钱）</option><option value="cash_to_fund">现金转理财（买入基金/股票）</option><option value="fund_to_cash">理财转现金（赎回回款）</option><option value="fund_transfer">理财互转（基金A → 基金B）</option></select></div>
+    <div class="form-group"><label>划转类型</label><select id="m-tr-type" onchange="onTransferTypeChange()"></select></div>
     <div class="form-group"><label>转出账户</label><select id="m-tr-from"></select></div>
     <div class="form-group"><label>转入账户</label><select id="m-tr-to"></select></div>
     <div class="form-group"><label>划转金额（元）</label><input type="number" id="m-tr-amt" placeholder="0.00" step="0.01"></div>
@@ -269,9 +301,9 @@ input,select,button,textarea{font-family:inherit}
 <div class="modal-overlay" id="return-modal">
   <div class="modal">
     <h3>录入收益</h3>
-    <div class="form-group"><label>关联账户</label><select id="m-ret-acc"></select></div>
+    <div class="form-group"><label>日期</label><input type="date" id="m-ret-date"></div>
     <div class="form-group"><label>收益金额（元）</label><input type="number" id="m-ret-amt" placeholder="正数为盈利，负数为亏损" step="0.01"></div>
-    <div class="form-group"><label>收益类型</label><select id="m-ret-type"><option value="fund_dividend">基金分红</option><option value="interest">理财利息</option><option value="stock_gain">股票浮盈</option><option value="deposit_interest">存款利息</option><option value="fund_loss">理财亏损</option><option value="stock_loss">股票浮亏</option></select></div>
+    <div class="form-group"><label>收益类型</label><select id="m-ret-type"></select></div>
     <div class="form-group"><label>备注（可选）</label><textarea id="m-ret-note" rows="2" placeholder="例如：某指数基金Q2分红"></textarea></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('return-modal')">取消</button><button class="btn btn-success" onclick="saveReturn()">确认录入</button></div>
   </div>
@@ -288,21 +320,87 @@ input,select,button,textarea{font-family:inherit}
 </div>
 
 <script>
-var API='http://localhost:5000/api', currentUser=null, isReg=false, editAccId=null, charts={};
+var API='/api', currentUser=null, isReg=false, editAccId=null, charts={};
+var dictCache={};
+var selectedPrincipalAccId=null, selectedReturnAccId=null;
+
+/* 硬编码的 label 映射 (作为 fallback) */
 var sourceLabels={initial:'初始存量',salary:'工资收入',side_income:'兼职收入',red_packet:'红包',gift:'馈赠',transfer:'账户划转',spend:'消费支出',other:'其他'};
 var transferLabels={cash_transfer:'现金互转',cash_to_fund:'现金转理财',fund_to_cash:'理财转现金',fund_transfer:'理财互转'};
 var typeLabels={bank:'银行存款',fund:'基金理财',stock:'股票账户',cash:'现金/零钱',debt:'信贷/负债'};
 var returnLabels={fund_dividend:'基金分红',interest:'理财利息',stock_gain:'股票浮盈',deposit_interest:'存款利息',fund_loss:'理财亏损',stock_loss:'股票浮亏'};
-var fmtMoney=function(n){if(n===undefined||n===null)return'¥0.00';return'¥'+Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})};
+
+var fmtMoney=function(n){if(n===undefined||n===null)return'\u00a50.00';return'\u00a5'+Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})};
+
+function getTodayStr(){var d=new Date();var m=String(d.getMonth()+1).padStart(2,'0');var day=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+day}
+
+/* Dict Cache */
+async function loadDictCache(){
+  var types=['account_type','principal_source','return_type','transfer_type'];
+  for(var i=0;i<types.length;i++){
+    try{
+      var r=await fetch(API+'/dicts?user_id='+currentUser.id+'&dict_type='+types[i]);
+      var d=await r.json();
+      if(d.success) dictCache[types[i]]=d.items;
+    }catch(e){}
+  }
+}
+
+function fillDictSelect(selectEl,dictType,placeholder){
+  var items=dictCache[dictType]||[];
+  if(!items.length){
+    selectEl.innerHTML='<option value="">'+(placeholder||'无数据')+'</option>';
+    return;
+  }
+  selectEl.innerHTML=items.map(function(item){
+    return'<option value="'+item.value+'">'+item.label+'</option>';
+  }).join('');
+}
+
+function getDictLabel(dictType,value){
+  var items=dictCache[dictType]||[];
+  for(var i=0;i<items.length;i++){
+    if(items[i].value===value) return items[i].label;
+  }
+  return value;
+}
 
 /* Auth */
 function toggleAuthMode(){isReg=!isReg;document.getElementById('auth-title').textContent=isReg?'注册':'登录';document.getElementById('auth-sub').textContent=isReg?'创建你的资产管理账号':'登录你的资产管理系统';document.getElementById('auth-submit').textContent=isReg?'注册':'登录';document.getElementById('auth-switch').innerHTML=isReg?'已有账号？<a href="#" onclick="toggleAuthMode()">去登录</a>':'还没有账号？<a href="#" onclick="toggleAuthMode()">立即注册</a>';document.getElementById('auth-error').textContent=''}
-async function handleAuth(){var u=document.getElementById('auth-username').value.trim(),p=document.getElementById('auth-password').value.trim(),e=document.getElementById('auth-error');if(!u||!p){e.textContent='请输入用户名和密码';return}try{var r=await fetch(API+(isReg?'/register':'/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}),d=await r.json();if(d.success){currentUser=d.user;enterApp()}else{e.textContent=d.message}}catch(x){e.textContent='网络错误，请确保后端已启动'}}
-function enterApp(){document.getElementById('auth-page').style.display='none';document.getElementById('app-page').classList.add('active');document.getElementById('user-display').textContent=currentUser.username;document.getElementById('user-avatar').textContent=currentUser.username[0].toUpperCase();document.getElementById('update-time').textContent='更新时间：'+new Date().toLocaleString('zh-CN');loadDashboard();loadAccounts()}
+async function handleAuth(){var u=document.getElementById('auth-username').value.trim(),p=document.getElementById('auth-password').value.trim(),e=document.getElementById('auth-error');if(!u||!p){e.textContent='请输入用户名和密码';return}
+try{
+  var r=await fetch(API+(isReg?'/register':'/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}),d=await r.json();
+  if(d.success){currentUser=d.user;enterApp()}
+  else{
+    if(!isReg && (d.message==='user not found'||d.message==='invalid credentials')){
+      e.textContent='该用户未注册 / 密码错误，请重新输入';
+    }else{
+      e.textContent=d.message;
+    }
+  }
+}catch(x){e.textContent='网络错误，请确保后端已启动'}}
+
+function enterApp(){
+  document.getElementById('auth-page').style.display='none';
+  document.getElementById('app-page').classList.add('active');
+  document.getElementById('user-display').textContent=currentUser.username;
+  document.getElementById('user-avatar').textContent=currentUser.username[0].toUpperCase();
+  document.getElementById('update-time').textContent='更新时间：'+new Date().toLocaleString('zh-CN');
+  loadDictCache().then(function(){
+    loadDashboard();loadAccounts();
+  });
+}
 function logout(){currentUser=null;document.getElementById('app-page').classList.remove('active');document.getElementById('auth-page').style.display='flex';document.getElementById('auth-username').value='';document.getElementById('auth-password').value='';document.getElementById('auth-error').textContent='';Object.values(charts).forEach(function(c){if(c&&c.dispose)c.dispose()});charts={}}
 
 /* Nav */
-function nav(page){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.sidebar nav a').forEach(function(a){a.classList.remove('active')});document.getElementById('page-'+page).classList.add('active');document.querySelector('[data-page="'+page+'"]').classList.add('active');document.querySelector('.sidebar').classList.remove('open');if(page==='dashboard')loadDashboard();if(page==='accounts')loadAccounts();if(page==='principals')loadPrincipals();if(page==='returns')loadReturns();if(page==='transfers')loadTransfers();setTimeout(function(){window.dispatchEvent(new Event('resize'))},100)}
+function nav(page){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.sidebar nav a').forEach(function(a){a.classList.remove('active')});document.getElementById('page-'+page).classList.add('active');document.querySelector('[data-page="'+page+'"]').classList.add('active');document.querySelector('.sidebar').classList.remove('open');
+if(page==='dashboard')loadDashboard();
+if(page==='accounts')loadAccounts();
+if(page==='principals'){loadPrincipalAccSelector();loadPrincipals(selectedPrincipalAccId)}
+if(page==='returns'){loadReturnAccSelector();loadReturns(selectedReturnAccId)}
+if(page==='transfers')loadTransfers();
+if(page==='settings')loadDictItems();
+setTimeout(function(){window.dispatchEvent(new Event('resize'))},100)}
 
 /* Dashboard */
 async function loadDashboard(){try{var r=await fetch(API+'/stats?user_id='+currentUser.id),d=await r.json();if(!d.success)return;var s=d.stats;
@@ -314,6 +412,7 @@ document.getElementById('metrics-grid').innerHTML=
   '<div class="metric-card teal"><div class="mv" style="color:var(--accent);">'+s.annual_rate+'%</div><div class="ml">年化收益率</div></div>'+
   '<div class="metric-card red"><div class="mv" style="color:var(--danger);">'+fmtMoney(s.total_debt)+'</div><div class="ml">负债总额</div></div>';
 if(typeof echarts==='undefined')return;onEChartsReady(function(){_renderCharts(s)})}catch(e){console.error(e)}}
+
 function _renderCharts(s){
   var pieData=Object.keys(s.structure).map(function(k){return{value:s.structure[k],name:typeLabels[k]||k}});
   if(!charts.pie){charts.pie=echarts.init(document.getElementById('chart-pie'));window.addEventListener('resize',function(){charts.pie&&charts.pie.resize()})}
@@ -322,70 +421,350 @@ function _renderCharts(s){
   charts.pie2.setOption({animation:false,tooltip:{trigger:'item',formatter:'{b}: {c} ({d}%)'},color:['#0D9488','#EF4444'],series:[{type:'pie',radius:['40%','65%'],itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},label:{formatter:'{b}\n{d}%'},data:[{value:Math.abs(s.total_principal),name:'本金'},{value:Math.abs(s.total_return),name:'收益'}]}]});
   var accs=Object.keys(s.return_by_account),vals=accs.map(function(k){return s.return_by_account[k]});
   if(!charts.bar){charts.bar=echarts.init(document.getElementById('chart-bar'));window.addEventListener('resize',function(){charts.bar&&charts.bar.resize()})}
-  charts.bar.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>收益: '+(p[0].value>=0?'+':'')+fmtMoney(p[0].value)}},grid:{left:60,right:16,top:20,bottom:40},xAxis:{type:'category',data:accs.length?accs:['暂无数据'],axisLabel:{color:'#6B7280',rotate:accs.length>5?30:0}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'¥'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'bar',data:vals.length?vals:[0],barWidth:'45%',itemStyle:{color:function(p){return p.value>=0?'#EF4444':'#10B981'},borderRadius:[4,4,0,0]}}]});
+  charts.bar.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>收益: '+(p[0].value>=0?'+':'')+fmtMoney(p[0].value)}},grid:{left:60,right:16,top:20,bottom:40},xAxis:{type:'category',data:accs.length?accs:['暂无数据'],axisLabel:{color:'#6B7280',rotate:accs.length>5?30:0}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'bar',data:vals.length?vals:[0],barWidth:'45%',itemStyle:{color:function(p){return p.value>=0?'#EF4444':'#10B981'},borderRadius:[4,4,0,0]}}]});
   _loadTrendChart();
 }
 
-/* Accounts */
+/* Accounts (修改5: 去除录入本金/收益按钮, 修改7: 双击展示资产走势) */
 async function loadAccounts(){try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();if(!d.success)return;
 var tb=document.getElementById('accounts-tbody');
-tb.innerHTML=d.accounts.map(function(a){var c=a.amount<0?'var(--danger)':'var(--ink)';return'<tr><td style="font-weight:500">'+a.name+'</td><td><span class="type-badge '+a.type+'">'+(typeLabels[a.type]||a.type)+'</span></td><td style="font-weight:700;color:'+c+'">'+fmtMoney(a.amount)+'</td><td><button class="btn btn-amber btn-sm" onclick="openPrincipalModal(\''+a.id+'\')">录入本金</button> <button class="btn btn-success btn-sm" onclick="openReturnModal(\''+a.id+'\')">录入收益</button> <button class="btn btn-ghost btn-sm" onclick="openEditAcc(\''+a.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delAcc(\''+a.id+'\')">删除</button></td></tr>'}).join('');
+tb.innerHTML=d.accounts.map(function(a){
+  var c=a.amount<0?'var(--danger)':'var(--ink)';
+  return'<tr ondblclick="showAccHistory(\''+a.id+'\',\''+a.name.replace(/'/g,"\\'")+'\')"><td style="font-weight:500">'+a.name+'</td><td><span class="type-badge '+a.type+'">'+(typeLabels[a.type]||a.type)+'</span></td><td style="font-weight:700;color:'+c+'">'+fmtMoney(a.amount)+'</td><td><button class="btn btn-ghost btn-sm" onclick="openEditAcc(\''+a.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delAcc(\''+a.id+'\')">删除</button></td></tr>';
+}).join('');
 document.getElementById('account-count').textContent='共 '+d.accounts.length+' 个账户'}catch(e){}}
 
-/* Account Modal */
-function openAccModal(){editAccId=null;document.getElementById('acc-modal-title').textContent='添加账户';document.getElementById('m-acc-name').value='';document.getElementById('m-acc-type').value='bank';document.getElementById('m-acc-amount').value='';document.getElementById('acc-modal').classList.add('active')}
-async function openEditAcc(id){editAccId=id;document.getElementById('acc-modal-title').textContent='编辑账户';try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();var a=d.accounts.find(function(x){return x.id===id});if(a){document.getElementById('m-acc-name').value=a.name;document.getElementById('m-acc-type').value=a.type;document.getElementById('m-acc-amount').value=Math.abs(a.amount)}}catch(e){}document.getElementById('acc-modal').classList.add('active')}
+/* 修改7: 双击展示资产折线图 */
+async function showAccHistory(accId, accName){
+  document.getElementById('trend-modal-title').textContent=accName+' - 资产走势';
+  document.getElementById('trend-modal').classList.add('active');
+  try{
+    var r=await fetch(API+'/accounts/'+accId+'/history?user_id='+currentUser.id);
+    var d=await r.json();
+    if(!d.success||!d.dates||d.dates.length===0){
+      document.getElementById('chart-trend-modal').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted)">暂无历史数据</div>';
+      return;
+    }
+    var labels=d.dates;
+    if(charts.trendModal)charts.trendModal.dispose();
+    charts.trendModal=echarts.init(document.getElementById('chart-trend-modal'));
+    window.addEventListener('resize',function(){charts.trendModal&&charts.trendModal.resize()});
+    charts.trendModal.setOption({
+      animation:false,
+      tooltip:{trigger:'axis',formatter:function(p){var res=p[0].axisValue+'<br/>';p.forEach(function(i){res+=i.marker+' '+i.seriesName+': \u00a5'+i.value.toFixed(2)+'<br/>';});return res}},
+      legend:{data:['本金余额','累计收益','总资产'],top:0,right:0},
+      grid:{left:60,right:20,top:32,bottom:24},
+      xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',fontSize:11}},
+      yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},
+      series:[
+        {name:'本金余额',type:'line',data:d.principal_balance,smooth:true,lineStyle:{color:'#0D9488',width:2}},
+        {name:'累计收益',type:'line',data:d.return_cumulative,smooth:true,lineStyle:{color:'#10B981',width:2}},
+        {name:'总资产',type:'line',data:d.total,smooth:true,lineStyle:{color:'#EF4444',width:2},areaStyle:{color:'rgba(239,68,68,0.06)'}}
+      ]
+    });
+  }catch(e){console.error(e)}
+}
+
+/* Account Modal (账户类型下拉从字典加载) */
+function openAccModal(){
+  editAccId=null;
+  document.getElementById('acc-modal-title').textContent='添加账户';
+  document.getElementById('m-acc-name').value='';
+  fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');
+  document.getElementById('m-acc-amount').value='';
+  document.getElementById('acc-modal').classList.add('active');
+}
+async function openEditAcc(id){
+  editAccId=id;
+  document.getElementById('acc-modal-title').textContent='编辑账户';
+  try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();
+  var a=d.accounts.find(function(x){return x.id===id});
+  if(a){document.getElementById('m-acc-name').value=a.name;fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');document.getElementById('m-acc-type').value=a.type;document.getElementById('m-acc-amount').value=Math.abs(a.amount)}
+  }catch(e){}
+  document.getElementById('acc-modal').classList.add('active');
+}
 function closeModal(id){document.getElementById(id).classList.remove('active')}
 async function saveAcc(){var n=document.getElementById('m-acc-name').value.trim(),t=document.getElementById('m-acc-type').value,a=parseFloat(document.getElementById('m-acc-amount').value)||0;if(!n){toast('请输入账户名称','error');return}try{if(editAccId){var r=await fetch(API+'/accounts/'+editAccId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,type:t,amount:a})})}else{var r=await fetch(API+'/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,name:n,type:t,amount:a})})}var d=await r.json();if(d.success){toast(editAccId?'更新成功':'添加成功','success');closeModal('acc-modal');loadAccounts();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
-async function delAcc(id){if(!confirm('确认删除该账户？\n将同步清理该账户关联的本金和收益记录。'))return;try{var r=await fetch(API+'/accounts/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadAccounts();loadDashboard();loadPrincipals();loadReturns()}}catch(e){}}
+async function delAcc(id){if(!confirm('确认删除该账户？\n将同步清理该账户关联的本金和收益记录。'))return;try{var r=await fetch(API+'/accounts/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadAccounts();loadDashboard();if(selectedPrincipalAccId===id){selectedPrincipalAccId=null}if(selectedReturnAccId===id){selectedReturnAccId=null}loadPrincipalAccSelector();loadReturnAccSelector()}}catch(e){}}
 
-/* Trend Charts */
+/* Trend Charts (修改2: 默认展示最近七天) */
 var trendPeriod='day';
 function switchTrendPeriod(p){trendPeriod=p;document.querySelectorAll('#trend-period-tabs .period-btn').forEach(function(b){b.classList.toggle('active',b.dataset.period===p)});_loadTrendChart()}
 
-async function _loadTrendChart(){try{var r=await fetch(API+'/snapshots?user_id='+currentUser.id+'&period='+trendPeriod),d=await r.json();if(!d.success||d.snapshots.length<2){if(charts.trend){charts.trend.dispose();charts.trend=null}document.getElementById('chart-trend').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted)">数据变动不足，暂无趋势图</div>';return}
-var allSameDate=d.snapshots.every(function(s,i,arr){return i===0||s.date===arr[0].date});
-var labels=d.snapshots.map(function(s){return allSameDate?(s.time||s.date):s.date}),pData=d.snapshots.map(function(s){return s.total_principal}),aData=d.snapshots.map(function(s){return s.total_assets}),rData=d.snapshots.map(function(s){return s.total_return});
-if(!charts.trend){charts.trend=echarts.init(document.getElementById('chart-trend'));window.addEventListener('resize',function(){charts.trend&&charts.trend.resize()})}
-charts.trend.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){var res=p[0].axisValue+'<br/>';p.forEach(function(i){res+=i.marker+' '+i.seriesName+': '+fmtMoney(i.value)+'<br/>'});return res}},legend:{data:['总本金','总资产','累计收益'],top:0,right:0,textStyle:{color:'#6B7280',fontSize:12}},grid:{left:50,right:20,top:32,bottom:24},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>8?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'¥'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{name:'总本金',type:'line',data:pData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#0D9488',width:2},areaStyle:{color:'rgba(13,148,136,0.06)'}},{name:'总资产',type:'line',data:aData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#EF4444',width:2},areaStyle:{color:'rgba(239,68,68,0.06)'}},{name:'累计收益',type:'line',data:rData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#10B981',width:2}}]})}catch(e){console.error(e)}}
+async function _loadTrendChart(){
+  try{
+    var r=await fetch(API+'/snapshots?user_id='+currentUser.id+'&period='+trendPeriod),d=await r.json();
+    if(!d.success||!d.snapshots||d.snapshots.length===0){
+      if(charts.trend){charts.trend.dispose();charts.trend=null}
+      document.getElementById('chart-trend').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted)">暂无快照数据</div>';
+      return;
+    }
+    /* 按created_at排序，取最后7条 */
+    var sorted=d.snapshots.sort(function(a,b){return(a.created_at||'').localeCompare(b.created_at||'')});
+    var snaps=sorted.slice(-7);
+    if(snaps.length===1){
+      /* 1条数据：只显示一个标记点 */
+      var label=snaps[0].date||(snaps[0].time||'');
+      if(!charts.trend){charts.trend=echarts.init(document.getElementById('chart-trend'));window.addEventListener('resize',function(){charts.trend&&charts.trend.resize()})}
+      charts.trend.setOption({animation:false,tooltip:{trigger:'item',formatter:function(p){return p.name+'<br/>'+p.seriesName+': '+fmtMoney(p.value)}},legend:{data:['总本金','总资产','累计收益'],top:0,right:0,textStyle:{color:'#6B7280',fontSize:12}},grid:{left:50,right:20,top:32,bottom:24},xAxis:{type:'category',data:[label],axisLabel:{color:'#6B7280',fontSize:11}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{name:'总本金',type:'scatter',data:[snaps[0].total_principal],showSymbol:true,symbolSize:10,itemStyle:{color:'#0D9488'}},{name:'总资产',type:'scatter',data:[snaps[0].total_assets],showSymbol:true,symbolSize:10,itemStyle:{color:'#EF4444'}},{name:'累计收益',type:'scatter',data:[snaps[0].total_return],showSymbol:true,symbolSize:10,itemStyle:{color:'#10B981'}}]});
+      return;
+    }
+    var allSameDate=snaps.every(function(s,i,arr){return i===0||s.date===arr[0].date});
+    var labels=snaps.map(function(s){return allSameDate?(s.time||s.date):s.date});
+    var pData=snaps.map(function(s){return s.total_principal});
+    var aData=snaps.map(function(s){return s.total_assets});
+    var rData=snaps.map(function(s){return s.total_return});
+    if(!charts.trend){charts.trend=echarts.init(document.getElementById('chart-trend'));window.addEventListener('resize',function(){charts.trend&&charts.trend.resize()})}
+    charts.trend.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){var res=p[0].axisValue+'<br/>';p.forEach(function(i){res+=i.marker+' '+i.seriesName+': '+fmtMoney(i.value)+'<br/>'});return res}},legend:{data:['总本金','总资产','累计收益'],top:0,right:0,textStyle:{color:'#6B7280',fontSize:12}},grid:{left:50,right:20,top:32,bottom:24},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>8?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{name:'总本金',type:'line',data:pData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#0D9488',width:2},areaStyle:{color:'rgba(13,148,136,0.06)'}},{name:'总资产',type:'line',data:aData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#EF4444',width:2},areaStyle:{color:'rgba(239,68,68,0.06)'}},{name:'累计收益',type:'line',data:rData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#10B981',width:2}}]})
+  }catch(e){console.error(e)}
+}
 
-async function openTrendModal(field,title){document.getElementById('trend-modal-title').textContent=title;document.getElementById('trend-modal').classList.add('active');try{var r=await fetch(API+'/snapshots?user_id='+currentUser.id+'&period='+trendPeriod),d=await r.json();if(!d.success||d.snapshots.length<2){document.getElementById('chart-trend-modal').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted)">数据变动不足，暂无趋势图</div>';return}
-var allSameDate=d.snapshots.every(function(s,i,arr){return i===0||s.date===arr[0].date});
-var labels=d.snapshots.map(function(s){return allSameDate?(s.time||s.date):s.date}),values=d.snapshots.map(function(s){return s[field]});
-var colorMap={total_principal:'#0D9488',total_assets:'#EF4444',total_return:'#10B981'};
-var color=colorMap[field]||'#0D9488';
-if(charts.trendModal){charts.trendModal.dispose()}charts.trendModal=echarts.init(document.getElementById('chart-trend-modal'));window.addEventListener('resize',function(){charts.trendModal&&charts.trendModal.resize()});
-charts.trendModal.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].axisValue+'<br/>'+p[0].marker+' 金额: '+fmtMoney(p[0].value)}},grid:{left:60,right:20,top:32,bottom:32},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>10?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'¥'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'line',data:values,smooth:true,showSymbol:labels.length<=20,symbolSize:6,lineStyle:{color:color,width:2},areaStyle:{color:'rgba('+parseInt(color.slice(1,3),16)+','+parseInt(color.slice(3,5),16)+','+parseInt(color.slice(5,7),16)+',0.08)'},itemStyle:{color:color}}]})}catch(e){console.error(e)}}
+async function openTrendModal(field,title){
+  document.getElementById('trend-modal-title').textContent=title;
+  document.getElementById('trend-modal').classList.add('active');
+  try{
+    var r=await fetch(API+'/snapshots?user_id='+currentUser.id+'&period='+trendPeriod),d=await r.json();
+    if(!d.success||d.snapshots.length<2){
+      document.getElementById('chart-trend-modal').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted)">数据变动不足，暂无趋势图</div>';return;
+    }
+    var sorted=d.snapshots.sort(function(a,b){return(a.created_at||'').localeCompare(b.created_at||'')});
+    var snaps=sorted.slice(-7);
+    var allSameDate=snaps.every(function(s,i,arr){return i===0||s.date===arr[0].date});
+    var labels=snaps.map(function(s){return allSameDate?(s.time||s.date):s.date});
+    var values=snaps.map(function(s){return s[field]});
+    var colorMap={total_principal:'#0D9488',total_assets:'#EF4444',total_return:'#10B981'};
+    var color=colorMap[field]||'#0D9488';
+    if(charts.trendModal){charts.trendModal.dispose()}
+    charts.trendModal=echarts.init(document.getElementById('chart-trend-modal'));
+    window.addEventListener('resize',function(){charts.trendModal&&charts.trendModal.resize()});
+    charts.trendModal.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].axisValue+'<br/>'+p[0].marker+' 金额: '+fmtMoney(p[0].value)}},grid:{left:60,right:20,top:32,bottom:32},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>10?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'line',data:values,smooth:true,showSymbol:labels.length<=20,symbolSize:6,lineStyle:{color:color,width:2},areaStyle:{color:'rgba('+parseInt(color.slice(1,3),16)+','+parseInt(color.slice(3,5),16)+','+parseInt(color.slice(5,7),16)+',0.08)'},itemStyle:{color:color}}]})
+  }catch(e){console.error(e)}
+}
 
-/* Principals */
-async function loadPrincipals(){try{var src=document.getElementById('filter-source').value;var url=API+'/principals?user_id='+currentUser.id;if(src)url+='&source_type='+src;
-var r=await fetch(url),d=await r.json();if(!d.success)return;var tb=document.getElementById('principals-tbody');
-if(!d.principals.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">暂无本金记录</td></tr>';document.getElementById('principal-count').textContent='';document.getElementById('principal-summary').style.display='none';return}
-var total=0;tb.innerHTML=d.principals.map(function(p){total+=p.amount;var dt=new Date(p.created_at).toLocaleString('zh-CN');var color=p.amount>=0?'var(--danger)':'var(--success)';var sign=p.amount>=0?'':'-';return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td>'+p.account_name+'</td><td style="font-weight:700;color:'+color+';">'+sign+fmtMoney(Math.abs(p.amount))+'</td><td><span class="source-badge">'+(sourceLabels[p.source_type]||p.source_type)+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(p.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delPrincipal(\''+p.id+'\')">删除</button></td></tr>'}).join('');
-document.getElementById('principal-count').textContent='共 '+d.principals.length+' 条';
-document.getElementById('principal-summary').style.display='block';document.getElementById('principal-total-text').textContent='本金台账净额：'+fmtMoney(total);document.getElementById('principal-detail-text').textContent='正数为流入，负数为支出'}catch(e){}}
-function openPrincipalModal(accId){var sel=document.getElementById('m-pr-acc');loadAccOptions(sel,accId);document.getElementById('m-pr-amt').value='';document.getElementById('m-pr-src').value='salary';document.getElementById('m-pr-note').value='';document.getElementById('principal-modal').classList.add('active')}
-function openSpendModal(accId){var sel=document.getElementById('m-spend-acc');loadAccOptions(sel,accId);document.getElementById('m-spend-amt').value='';document.getElementById('m-spend-note').value='';document.getElementById('spend-modal').classList.add('active')}
-async function loadAccOptions(sel,preselect){try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();sel.innerHTML=d.accounts.filter(function(a){return a.type!=='debt'}).map(function(a){return'<option value="'+a.id+'"'+(a.id===preselect?' selected':'')+'>'+a.name+'</option>'}).join('')}catch(e){}}
-async function savePrincipal(){var accId=document.getElementById('m-pr-acc').value,amt=parseFloat(document.getElementById('m-pr-amt').value)||0,src=document.getElementById('m-pr-src').value,note=document.getElementById('m-pr-note').value.trim();if(!accId){toast('请选择账户','error');return}if(amt<=0){toast('金额必须大于0','error');return}try{var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:amt,source_type:src,note})}),d=await r.json();if(d.success){toast('本金录入成功','success');closeModal('principal-modal');loadPrincipals();loadDashboard();loadAccounts()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
-async function saveSpend(){var accId=document.getElementById('m-spend-acc').value,amt=parseFloat(document.getElementById('m-spend-amt').value)||0,note=document.getElementById('m-spend-note').value.trim();if(!accId){toast('请选择账户','error');return}if(amt<=0){toast('支出金额必须大于0','error');return}try{var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:-amt,source_type:'spend',note})}),d=await r.json();if(d.success){toast('支出记录成功','success');closeModal('spend-modal');loadPrincipals();loadDashboard();loadAccounts()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
-async function delPrincipal(id){if(!confirm('确认删除？账户余额将同步扣减/回滚。'))return;try{var r=await fetch(API+'/principals/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadPrincipals();loadDashboard();loadAccounts()}}catch(e){}}
+/* Principals (修改6: 以账户为基准) */
+async function loadPrincipalAccSelector(){
+  try{
+    var r=await fetch(API+'/accounts?user_id='+currentUser.id);
+    var d=await r.json();
+    if(!d.success||!d.accounts.length){
+      document.getElementById('principal-acc-selector').innerHTML='<span style="color:var(--muted);font-size:0.85rem">暂无账户，请先添加</span>';
+      document.getElementById('principal-acc-title').textContent='请选择账户';
+      document.getElementById('principals-tbody').innerHTML='';
+      document.getElementById('principal-summary').style.display='none';
+      return;
+    }
+    var container=document.getElementById('principal-acc-selector');
+    container.innerHTML=d.accounts.map(function(a){
+      var isActive=selectedPrincipalAccId===a.id;
+      return'<button class="acc-btn'+(isActive?' active':'')+'" onclick="selectPrincipalAcc(\''+a.id+'\')">'+a.name+'</button>';
+    }).join('');
+    if(!selectedPrincipalAccId){
+      selectedPrincipalAccId=d.accounts[0].id;
+      loadPrincipalAccSelector();
+    }
+  }catch(e){console.error(e)}
+}
 
-/* Returns */
-async function loadReturns(){try{var r=await fetch(API+'/returns?user_id='+currentUser.id),d=await r.json();if(!d.success)return;var tb=document.getElementById('returns-tbody');
-if(!d.returns.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">暂无收益记录，请在账户管理中录入</td></tr>';document.getElementById('return-count').textContent='';document.getElementById('return-summary').style.display='none';return}
-var total=0;tb.innerHTML=d.returns.map(function(r){total+=r.amount;var dt=new Date(r.created_at).toLocaleString('zh-CN');var cls=r.amount>=0?'positive':'negative';var sign=r.amount>=0?'+':'';var badge=returnLabels[r.return_type]||r.return_type;return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td>'+r.account_name+'</td><td style="font-weight:700;color:'+(r.amount>=0?'var(--danger)':'var(--success)')+';">'+sign+fmtMoney(r.amount)+'</td><td><span class="return-badge '+cls+'">'+badge+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(r.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delReturn(\''+r.id+'\')">删除</button></td></tr>'}).join('');
-document.getElementById('return-count').textContent='共 '+d.returns.length+' 条';
-document.getElementById('return-summary').style.display='block';document.getElementById('return-total-text').textContent='累计总收益：'+(total>=0?'+':'')+fmtMoney(total);document.getElementById('return-detail-text').textContent='收益不修改账户本金余额，仅统计理财盈亏'}catch(e){}}
-function openReturnModal(accId){var sel=document.getElementById('m-ret-acc');loadAccOptions(sel,accId);document.getElementById('m-ret-amt').value='';document.getElementById('m-ret-type').value='fund_dividend';document.getElementById('m-ret-note').value='';document.getElementById('return-modal').classList.add('active')}
-async function saveReturn(){var accId=document.getElementById('m-ret-acc').value,amt=parseFloat(document.getElementById('m-ret-amt').value)||0,rt=document.getElementById('m-ret-type').value,note=document.getElementById('m-ret-note').value.trim();if(!accId){toast('请选择账户','error');return}if(amt===0){toast('收益金额不能为0','error');return}try{var r=await fetch(API+'/returns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:amt,return_type:rt,note})}),d=await r.json();if(d.success){toast('收益录入成功','success');closeModal('return-modal');loadReturns();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
-async function delReturn(id){if(!confirm('确认删除该收益记录？'))return;try{var r=await fetch(API+'/returns/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadReturns();loadDashboard()}}catch(e){}}
+function selectPrincipalAcc(accId){
+  selectedPrincipalAccId=accId;
+  loadPrincipalAccSelector();
+  loadPrincipals(accId);
+}
 
-/* Transfers */
+async function loadPrincipals(accId){
+  var tb=document.getElementById('principals-tbody');
+  if(!accId){
+    tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">请选择一个账户</td></tr>';
+    document.getElementById('principal-count').textContent='';
+    document.getElementById('principal-summary').style.display='none';
+    document.getElementById('principal-acc-title').textContent='请选择账户';
+    return;
+  }
+  try{
+    var url=API+'/principals?user_id='+currentUser.id+'&account_id='+accId;
+    var r=await fetch(url),d=await r.json();
+    if(!d.success)return;
+    /* 更新标题 */
+    var r2=await fetch(API+'/accounts?user_id='+currentUser.id);
+    var d2=await r2.json();
+    var accObj=null;
+    if(d2.success){accObj=d2.accounts.find(function(x){return x.id===accId})}
+    document.getElementById('principal-acc-title').textContent=accObj?accObj.name:'账户';
+    if(!d.principals.length){
+      tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无本金记录</td></tr>';
+      document.getElementById('principal-count').textContent='';
+      document.getElementById('principal-summary').style.display='none';
+      return;
+    }
+    var total=0;
+    tb.innerHTML=d.principals.map(function(p){
+      total+=p.amount;
+      var dt=(p.record_date||p.created_at||'').slice(0,10);
+      var color=p.amount>=0?'var(--danger)':'var(--success)';
+      var sign=p.amount>=0?'':'-';
+      var srcLabel=getDictLabel('principal_source',p.source_type)||sourceLabels[p.source_type]||p.source_type;
+      return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td style="font-weight:700;color:'+color+';">'+sign+fmtMoney(Math.abs(p.amount))+'</td><td><span class="source-badge">'+srcLabel+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(p.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delPrincipal(\''+p.id+'\')">删除</button></td></tr>';
+    }).join('');
+    document.getElementById('principal-count').textContent='共 '+d.principals.length+' 条';
+    document.getElementById('principal-summary').style.display='block';
+    document.getElementById('principal-total-text').textContent='本金台账净额：'+fmtMoney(total);
+    document.getElementById('principal-detail-text').textContent='正数为流入，负数为支出';
+  }catch(e){console.error(e)}
+}
+
+function openPrincipalModal(){
+  if(!selectedPrincipalAccId){toast('请先选择一个账户','error');return}
+  document.getElementById('m-pr-date').value=getTodayStr();
+  document.getElementById('m-pr-amt').value='';
+  fillDictSelect(document.getElementById('m-pr-src'),'principal_source','请选择来源');
+  document.getElementById('m-pr-note').value='';
+  document.getElementById('principal-modal').classList.add('active');
+}
+
+function openSpendModal(){
+  if(!selectedPrincipalAccId){toast('请先选择一个账户','error');return}
+  document.getElementById('m-spend-date').value=getTodayStr();
+  document.getElementById('m-spend-amt').value='';
+  document.getElementById('m-spend-note').value='';
+  document.getElementById('spend-modal').classList.add('active');
+}
+
+async function savePrincipal(){
+  var accId=selectedPrincipalAccId;
+  var amt=parseFloat(document.getElementById('m-pr-amt').value)||0;
+  var src=document.getElementById('m-pr-src').value;
+  var note=document.getElementById('m-pr-note').value.trim();
+  var dateVal=document.getElementById('m-pr-date').value||getTodayStr();
+  if(!accId){toast('请选择账户','error');return}
+  if(amt<=0){toast('金额必须大于0','error');return}
+  try{
+    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:amt,source_type:src,note:note,record_date:dateVal})});
+    var d=await r.json();
+    if(d.success){toast('本金录入成功','success');closeModal('principal-modal');loadPrincipals(accId);loadDashboard();loadAccounts()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function saveSpend(){
+  var accId=selectedPrincipalAccId;
+  var amt=parseFloat(document.getElementById('m-spend-amt').value)||0;
+  var note=document.getElementById('m-spend-note').value.trim();
+  var dateVal=document.getElementById('m-spend-date').value||getTodayStr();
+  if(!accId){toast('请选择账户','error');return}
+  if(amt<=0){toast('支出金额必须大于0','error');return}
+  try{
+    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:-amt,source_type:'spend',note:note,record_date:dateVal})});
+    var d=await r.json();
+    if(d.success){toast('支出记录成功','success');closeModal('spend-modal');loadPrincipals(accId);loadDashboard();loadAccounts()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function delPrincipal(id){if(!confirm('确认删除？账户余额将同步扣减/回滚。'))return;try{var r=await fetch(API+'/principals/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadPrincipals(selectedPrincipalAccId);loadDashboard();loadAccounts()}}catch(e){}}
+
+/* Returns (修改6: 以账户为基准) */
+async function loadReturnAccSelector(){
+  try{
+    var r=await fetch(API+'/accounts?user_id='+currentUser.id);
+    var d=await r.json();
+    if(!d.success||!d.accounts.length){
+      document.getElementById('return-acc-selector').innerHTML='<span style="color:var(--muted);font-size:0.85rem">暂无账户，请先添加</span>';
+      document.getElementById('return-acc-title').textContent='请选择账户';
+      document.getElementById('returns-tbody').innerHTML='';
+      document.getElementById('return-summary').style.display='none';
+      return;
+    }
+    var container=document.getElementById('return-acc-selector');
+    container.innerHTML=d.accounts.map(function(a){
+      var isActive=selectedReturnAccId===a.id;
+      return'<button class="acc-btn'+(isActive?' active':'')+'" onclick="selectReturnAcc(\''+a.id+'\')">'+a.name+'</button>';
+    }).join('');
+    if(!selectedReturnAccId){
+      selectedReturnAccId=d.accounts[0].id;
+      loadReturnAccSelector();
+    }
+  }catch(e){console.error(e)}
+}
+
+function selectReturnAcc(accId){
+  selectedReturnAccId=accId;
+  loadReturnAccSelector();
+  loadReturns(accId);
+}
+
+async function loadReturns(accId){
+  var tb=document.getElementById('returns-tbody');
+  if(!accId){
+    tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">请选择一个账户</td></tr>';
+    document.getElementById('return-count').textContent='';
+    document.getElementById('return-summary').style.display='none';
+    document.getElementById('return-acc-title').textContent='请选择账户';
+    return;
+  }
+  try{
+    var url=API+'/returns?user_id='+currentUser.id+'&account_id='+accId;
+    var r=await fetch(url),d=await r.json();
+    if(!d.success)return;
+    /* 更新标题 */
+    var r2=await fetch(API+'/accounts?user_id='+currentUser.id);
+    var d2=await r2.json();
+    var accObj=null;
+    if(d2.success){accObj=d2.accounts.find(function(x){return x.id===accId})}
+    document.getElementById('return-acc-title').textContent=accObj?accObj.name:'账户';
+    if(!d.returns.length){
+      tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无收益记录</td></tr>';
+      document.getElementById('return-count').textContent='';
+      document.getElementById('return-summary').style.display='none';
+      return;
+    }
+    var total=0;
+    tb.innerHTML=d.returns.map(function(r){
+      total+=r.amount;
+      var dt=(r.record_date||r.created_at||'').slice(0,10);
+      var cls=r.amount>=0?'positive':'negative';
+      var sign=r.amount>=0?'+':'';
+      var badge=getDictLabel('return_type',r.return_type)||returnLabels[r.return_type]||r.return_type;
+      return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td style="font-weight:700;color:'+(r.amount>=0?'var(--danger)':'var(--success)')+';">'+sign+fmtMoney(r.amount)+'</td><td><span class="return-badge '+cls+'">'+badge+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(r.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delReturn(\''+r.id+'\')">删除</button></td></tr>';
+    }).join('');
+    document.getElementById('return-count').textContent='共 '+d.returns.length+' 条';
+    document.getElementById('return-summary').style.display='block';
+    document.getElementById('return-total-text').textContent='累计总收益：'+(total>=0?'+':'')+fmtMoney(total);
+    document.getElementById('return-detail-text').textContent='收益不修改账户本金余额，仅统计理财盈亏';
+  }catch(e){console.error(e)}
+}
+
+function openReturnModal(){
+  if(!selectedReturnAccId){toast('请先选择一个账户','error');return}
+  document.getElementById('m-ret-date').value=getTodayStr();
+  document.getElementById('m-ret-amt').value='';
+  fillDictSelect(document.getElementById('m-ret-type'),'return_type','请选择类型');
+  document.getElementById('m-ret-note').value='';
+  document.getElementById('return-modal').classList.add('active');
+}
+
+async function saveReturn(){
+  var accId=selectedReturnAccId;
+  var amt=parseFloat(document.getElementById('m-ret-amt').value)||0;
+  var rt=document.getElementById('m-ret-type').value;
+  var note=document.getElementById('m-ret-note').value.trim();
+  var dateVal=document.getElementById('m-ret-date').value||getTodayStr();
+  if(!accId){toast('请选择账户','error');return}
+  if(amt===0){toast('收益金额不能为0','error');return}
+  try{
+    var r=await fetch(API+'/returns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:amt,return_type:rt,note:note,record_date:dateVal})});
+    var d=await r.json();
+    if(d.success){toast('收益录入成功','success');closeModal('return-modal');loadReturns(accId);loadDashboard()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function delReturn(id){if(!confirm('确认删除该收益记录？'))return;try{var r=await fetch(API+'/returns/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadReturns(selectedReturnAccId);loadDashboard()}}catch(e){}}
+
+/* Transfers (划转类型下拉从字典加载) */
 var transferAccountsCache=[];
 async function loadTransfers(){try{var r=await fetch(API+'/transfers?user_id='+currentUser.id),d=await r.json();if(!d.success)return;var tb=document.getElementById('transfers-tbody');
 if(!d.transfers.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">暂无划转记录</td></tr>';document.getElementById('transfer-count').textContent='';document.getElementById('transfer-summary').style.display='none';return}
-var totalFee=0;tb.innerHTML=d.transfers.map(function(t){totalFee+=t.fee;var dt=new Date(t.created_at).toLocaleString('zh-CN');return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td><span class="source-badge">'+(transferLabels[t.transfer_type]||t.transfer_type)+'</span></td><td>'+t.from_account_name+'</td><td>'+t.to_account_name+'</td><td style="font-weight:700;color:var(--danger);">'+fmtMoney(t.amount)+'</td><td style="color:var(--success);">'+(t.fee?fmtMoney(t.fee):'-')+'</td><td style="color:var(--muted);font-size:0.83rem;">'+(t.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delTransfer(\''+t.id+'\')">删除</button></td></tr>'}).join('');
+var totalFee=0;tb.innerHTML=d.transfers.map(function(t){totalFee+=t.fee;var dt=new Date(t.created_at).toLocaleString('zh-CN');var trLabel=getDictLabel('transfer_type',t.transfer_type)||transferLabels[t.transfer_type]||t.transfer_type;return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td><span class="source-badge">'+trLabel+'</span></td><td>'+t.from_account_name+'</td><td>'+t.to_account_name+'</td><td style="font-weight:700;color:var(--danger);">'+fmtMoney(t.amount)+'</td><td style="color:var(--success);">'+(t.fee?fmtMoney(t.fee):'-')+'</td><td style="color:var(--muted);font-size:0.83rem;">'+(t.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delTransfer(\''+t.id+'\')">删除</button></td></tr>'}).join('');
 document.getElementById('transfer-count').textContent='共 '+d.transfers.length+' 条';
 document.getElementById('transfer-summary').style.display='block';document.getElementById('transfer-total-text').textContent='累计手续费：'+fmtMoney(totalFee);document.getElementById('transfer-detail-text').textContent='划转不改变总本金，仅调整账户间分布'}catch(e){console.error(e)}}
 
@@ -404,11 +783,83 @@ fromSel.innerHTML=render(fromOpts);toSel.innerHTML=render(toOpts)}
 
 function onTransferTypeChange(){populateTransferSelects()}
 
-async function openTransferModal(){if(!transferAccountsCache.length)await loadTransferAccounts();document.getElementById('m-tr-type').value='cash_transfer';document.getElementById('m-tr-amt').value='';document.getElementById('m-tr-fee').value='';document.getElementById('m-tr-note').value='';populateTransferSelects();document.getElementById('transfer-modal').classList.add('active')}
+async function openTransferModal(){
+  if(!transferAccountsCache.length)await loadTransferAccounts();
+  fillDictSelect(document.getElementById('m-tr-type'),'transfer_type','请选择类型');
+  document.getElementById('m-tr-amt').value='';document.getElementById('m-tr-fee').value='';document.getElementById('m-tr-note').value='';
+  populateTransferSelects();
+  document.getElementById('transfer-modal').classList.add('active');
+}
 
 async function saveTransfer(){var fromId=document.getElementById('m-tr-from').value,toId=document.getElementById('m-tr-to').value,amt=parseFloat(document.getElementById('m-tr-amt').value)||0,fee=parseFloat(document.getElementById('m-tr-fee').value)||0,type=document.getElementById('m-tr-type').value,note=document.getElementById('m-tr-note').value.trim();if(!fromId||!toId){toast('请选择转出和转入账户','error');return}if(fromId===toId){toast('转出和转入账户不能相同','error');return}if(amt<=0){toast('划转金额必须大于0','error');return}if(fee<0){toast('手续费不能为负数','error');return}try{var r=await fetch(API+'/transfers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,from_account_id:fromId,to_account_id:toId,amount:amt,fee:fee,transfer_type:type,note:note})}),d=await r.json();if(d.success){toast('划转成功','success');closeModal('transfer-modal');loadTransfers();loadAccounts();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
 
 async function delTransfer(id){if(!confirm('确认删除？划转金额和手续费将回滚至原账户。'))return;try{var r=await fetch(API+'/transfers/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadTransfers();loadAccounts();loadDashboard()}}catch(e){}}
+
+/* Dict Management (修改3) */
+async function loadDictItems(){
+  var dictType=document.getElementById('dict-type-select').value;
+  try{
+    var r=await fetch(API+'/dicts?user_id='+currentUser.id+'&dict_type='+dictType);
+    var d=await r.json();
+    if(!d.success){document.getElementById('dict-list').innerHTML='<p style="color:var(--muted)">加载失败</p>';return}
+    var items=d.items||[];
+    if(!items.length){document.getElementById('dict-list').innerHTML='<p style="color:var(--muted)">暂无数据</p>';return}
+    var html='<table class="data-table"><thead><tr><th>值</th><th>显示名称</th><th>操作</th></tr></thead><tbody>';
+    items.forEach(function(item){
+      html+='<tr><td>'+item.value+'</td><td>'+item.label+'</td><td><button class="btn btn-ghost btn-sm" onclick="editDictItem(\''+item.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="deleteDictItem(\''+item.id+'\')">删除</button></td></tr>';
+    });
+    html+='</tbody></table>';
+    document.getElementById('dict-list').innerHTML=html;
+  }catch(e){console.error(e)}
+}
+
+async function saveDictItem(){
+  var dictType=document.getElementById('dict-type-select').value;
+  var label=document.getElementById('dict-label-input').value.trim();
+  var value=document.getElementById('dict-value-input').value.trim();
+  if(!label||!value){toast('请填写显示名称和值','error');return}
+  try{
+    var r=await fetch(API+'/dicts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,dict_type:dictType,label:label,value:value})});
+    var d=await r.json();
+    if(d.success){toast('添加成功','success');document.getElementById('dict-label-input').value='';document.getElementById('dict-value-input').value='';loadDictItems();loadDictCache()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function editDictItem(id){
+  var newLabel=prompt('请输入新的显示名称：');
+  if(newLabel===null)return;
+  var newValue=prompt('请输入新的值(英文)：');
+  if(newValue===null)return;
+  try{
+    var r=await fetch(API+'/dicts/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({label:newLabel.trim(),value:newValue.trim()})});
+    var d=await r.json();
+    if(d.success){toast('更新成功','success');loadDictItems();loadDictCache()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function deleteDictItem(id){
+  if(!confirm('确认删除该字典项？'))return;
+  try{
+    var r=await fetch(API+'/dicts/'+id,{method:'DELETE'});
+    var d=await r.json();
+    if(d.success){toast('删除成功','success');loadDictItems();loadDictCache()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+/* Reset Data (修改4) */
+async function resetData(){
+  if(!confirm('确认重置？'))return;
+  if(!confirm('这将删除您所有账户、本金、收益、划转和快照数据，此操作不可恢复！\n\n再次确认：是否继续？'))return;
+  try{
+    var r=await fetch(API+'/reset-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id})});
+    var d=await r.json();
+    if(d.success){toast('数据已重置','success');selectedPrincipalAccId=null;selectedReturnAccId=null;loadAccounts();loadDashboard();loadDictCache()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
 
 /* Toast */
 function toast(msg,type){var el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type+' show';setTimeout(function(){el.classList.remove('show')},2500)}
