@@ -184,7 +184,7 @@ input,select,button,textarea{font-family:inherit}
       <div class="page-header"><h2>账户管理</h2><button class="btn btn-accent" onclick="openAccModal()">+ 添加账户</button></div>
       <div class="page-body">
         <div class="table-header"><h3>全部账户</h3><span class="info" id="account-count"></span></div>
-        <table class="data-table"><thead><tr><th>账户名称</th><th>类型</th><th>本金余额</th><th>操作</th></tr></thead><tbody id="accounts-tbody"></tbody></table>
+        <table class="data-table"><thead><tr><th>账户名称</th><th>类型</th><th>本金余额</th><th>累计收益</th><th>操作</th></tr></thead><tbody id="accounts-tbody"></tbody></table>
       </div>
     </div>
     <!-- Principals (修改6: 以账户为基准) -->
@@ -237,7 +237,8 @@ input,select,button,textarea{font-family:inherit}
           <div class="filter-bar" style="margin-top:12px">
             <select id="dict-type-select" onchange="loadDictItems()">
               <option value="account_type">账户类型</option>
-              <option value="principal_source">本金来源</option>
+              <option value="principal_income">本金收入类型</option>
+              <option value="principal_spend">本金支出类型</option>
               <option value="return_type">收益类型</option>
               <option value="transfer_type">划转类型</option>
             </select>
@@ -338,7 +339,7 @@ function getTodayStr(){var d=new Date();var m=String(d.getMonth()+1).padStart(2,
 
 /* Dict Cache */
 async function loadDictCache(){
-  var types=['account_type','principal_source','return_type','transfer_type'];
+  var types=['account_type','principal_income','principal_spend','return_type','transfer_type'];
   for(var i=0;i<types.length;i++){
     try{
       var r=await fetch(API+'/dicts?user_id='+currentUser.id+'&dict_type='+types[i]);
@@ -432,7 +433,10 @@ async function loadAccounts(){try{var r=await fetch(API+'/accounts?user_id='+cur
 var tb=document.getElementById('accounts-tbody');
 tb.innerHTML=d.accounts.map(function(a){
   var c=a.amount<0?'var(--danger)':'var(--ink)';
-  return'<tr ondblclick="showAccHistory(\''+a.id+'\',\''+a.name.replace(/'/g,"\\'")+'\')"><td style="font-weight:500">'+a.name+'</td><td><span class="type-badge '+a.type+'">'+(typeLabels[a.type]||a.type)+'</span></td><td style="font-weight:700;color:'+c+'">'+fmtMoney(a.amount)+'</td><td><button class="btn btn-ghost btn-sm" onclick="openEditAcc(\''+a.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delAcc(\''+a.id+'\')">删除</button></td></tr>';
+  var ret=a.total_return||0;
+  var retColor=ret>=0?'var(--danger)':'var(--success)';
+  var retSign=ret>=0?'+':'';
+  return'<tr ondblclick="showAccHistory(\''+a.id+'\',\''+a.name.replace(/'/g,"\\'")+'\')"><td style="font-weight:500">'+a.name+'</td><td><span class="type-badge '+a.type+'">'+(typeLabels[a.type]||a.type)+'</span></td><td style="font-weight:700;color:'+c+'">'+fmtMoney(a.amount)+'</td><td style="font-weight:700;color:'+retColor+'">'+retSign+fmtMoney(ret)+'</td><td><button class="btn btn-ghost btn-sm" onclick="openEditAcc(\''+a.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delAcc(\''+a.id+'\')">删除</button></td></tr>';
 }).join('');
 document.getElementById('account-count').textContent='共 '+d.accounts.length+' 个账户'}catch(e){}}
 
@@ -604,7 +608,8 @@ async function loadPrincipals(accId){
       var color=p.amount>=0?'var(--danger)':'var(--success)';
       var sign=p.amount>=0?'':'-';
       var badgeCls=p.amount>=0?'up':'down';
-      var srcLabel=getDictLabel('principal_source',p.source_type)||sourceLabels[p.source_type]||p.source_type;
+      var dictType=p.amount>=0?'principal_income':'principal_spend';
+      var srcLabel=getDictLabel(dictType,p.source_type)||sourceLabels[p.source_type]||p.source_type;
       return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td style="font-weight:700;color:'+color+';">'+sign+fmtMoney(Math.abs(p.amount))+'</td><td><span class="source-badge '+badgeCls+'">'+srcLabel+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(p.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delPrincipal(\''+p.id+'\')">删除</button></td></tr>';
     }).join('');
     document.getElementById('principal-count').textContent='共 '+d.principals.length+' 条';
@@ -618,7 +623,7 @@ function openPrincipalModal(){
   if(!selectedPrincipalAccId){toast('请先选择一个账户','error');return}
   document.getElementById('m-pr-date').value=getTodayStr();
   document.getElementById('m-pr-amt').value='';
-  fillDictSelect(document.getElementById('m-pr-src'),'principal_source','请选择来源');
+  fillDictSelect(document.getElementById('m-pr-src'),'principal_income','请选择类型');
   document.getElementById('m-pr-note').value='';
   document.getElementById('principal-modal').classList.add('active');
 }
@@ -627,7 +632,7 @@ function openSpendModal(){
   if(!selectedPrincipalAccId){toast('请先选择一个账户','error');return}
   document.getElementById('m-spend-date').value=getTodayStr();
   document.getElementById('m-spend-amt').value='';
-  fillDictSelect(document.getElementById('m-spend-src'),'principal_source','请选择类型');
+  fillDictSelect(document.getElementById('m-spend-src'),'principal_spend','请选择类型');
   document.getElementById('m-spend-note').value='';
   document.getElementById('spend-modal').classList.add('active');
 }

@@ -127,15 +127,19 @@ def init_db():
             ('account_type', 'stock', '股票账户', 3),
             ('account_type', 'cash', '现金零钱', 4),
             ('account_type', 'debt', '信贷负债', 5),
-            # principal_source
-            ('principal_source', 'initial', '初始存量', 1),
-            ('principal_source', 'salary', '工资收入', 2),
-            ('principal_source', 'side_income', '兼职收入', 3),
-            ('principal_source', 'red_packet', '红包', 4),
-            ('principal_source', 'gift', '馈赠', 5),
-            ('principal_source', 'transfer', '账户划转', 6),
-            ('principal_source', 'spend', '消费支出', 7),
-            ('principal_source', 'other', '其他', 8),
+            # principal_income
+            ('principal_income', 'initial', '初始存量', 1),
+            ('principal_income', 'salary', '工资收入', 2),
+            ('principal_income', 'side_income', '兼职收入', 3),
+            ('principal_income', 'red_packet', '红包', 4),
+            ('principal_income', 'gift', '馈赠', 5),
+            ('principal_income', 'transfer', '账户划转', 6),
+            ('principal_income', 'other', '其他', 7),
+            # principal_spend
+            ('principal_spend', 'spend', '消费支出', 1),
+            ('principal_spend', 'transfer_out', '转账给他人', 2),
+            ('principal_spend', 'repay', '还信用卡', 3),
+            ('principal_spend', 'other', '其他', 4),
             # return_type
             ('return_type', 'fund_dividend', '基金分红', 1),
             ('return_type', 'interest', '理财利息', 2),
@@ -297,7 +301,13 @@ def get_accounts():
         return jsonify({'success': False, 'message': '缺少 user_id'}), 400
     db = get_db()
     accounts = db.execute("SELECT * FROM accounts WHERE user_id=? ORDER BY created_at", (user_id,)).fetchall()
-    return jsonify({'success': True, 'accounts': rows_to_list(accounts)})
+    result = []
+    for acc in accounts:
+        acc_dict = dict(acc)
+        ret_sum = db.execute("SELECT COALESCE(SUM(amount), 0) FROM returns WHERE account_id=? AND user_id=?", (acc['id'], user_id)).fetchone()[0]
+        acc_dict['total_return'] = float(ret_sum)
+        result.append(acc_dict)
+    return jsonify({'success': True, 'accounts': result})
 
 @app.route('/api/accounts', methods=['POST'])
 def add_account():
@@ -369,6 +379,7 @@ def delete_account(acc_id):
 @app.route('/api/principals', methods=['GET'])
 def get_principals():
     user_id = request.args.get('user_id', '')
+    account_id = request.args.get('account_id', '')
     source_type = request.args.get('source_type', '')
     start_date = request.args.get('start_date', '')
     end_date = request.args.get('end_date', '')
@@ -378,6 +389,9 @@ def get_principals():
     db = get_db()
     query = "SELECT p.*, a.name as account_name FROM principals p LEFT JOIN accounts a ON p.account_id=a.id WHERE p.user_id=?"
     params = [user_id]
+    if account_id:
+        query += " AND p.account_id=?"
+        params.append(account_id)
     if source_type:
         query += " AND p.source_type=?"
         params.append(source_type)
