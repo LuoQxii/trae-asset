@@ -680,7 +680,7 @@ def delete_dict(did):
 # ========== 重置数据 API ==========
 @app.route('/api/reset-data', methods=['POST'])
 def reset_data():
-    data = request.get_json()
+    data = request.get_json() or {}
     user_id = data.get('user_id', '').strip()
     if not user_id:
         return jsonify({'success': False, 'message': '缺少 user_id'}), 400
@@ -716,7 +716,7 @@ def get_account_history(acc_id):
 
     # 获取该账户所有本金记录，按 record_date 排序
     principals = db.execute(
-        "SELECT record_date, amount FROM principals WHERE account_id=? AND user_id=? ORDER BY record_date ASC, created_at ASC",
+        "SELECT record_date, amount, source_type FROM principals WHERE account_id=? AND user_id=? ORDER BY record_date ASC, created_at ASC",
         (acc_id, user_id)
     ).fetchall()
 
@@ -772,14 +772,36 @@ def get_account_history(acc_id):
             continue
         return_by_date[d] = return_by_date.get(d, 0) + r['amount']
 
+    # 账户初始本金（创建时的 amount）作为基准
+    initial_principal = float(acc['amount'])
+    # 把 principals 表中的"初始本金"记录（source_type='initial'）排除，避免重复计算
+    initial_total = 0.0
+    for p in principals:
+        if p['source_type'] == 'initial':
+            initial_total += p['amount']
+    # 实际初始本金 = 账户当前amount - 所有本金台账记录sum（不含initial）+ initial_total
+    # 简化：直接从账户当前余额作为终点反推
+    # 更直接的方式：以账户创建时的初始金额为起点
+    # 先算所有非initial本金变动的累计
+    non_initial_change = 0.0
+    for p in principals:
+        if p['source_type'] != 'initial':
+            non_initial_change += p['amount']
+    actual_initial = acc['amount'] - non_initial_change
+
     # 逐日累加
     principal_balance_list = []
     return_cumulative_list = []
     total_list = []
-    cum_principal = 0.0
+    cum_principal = actual_initial
     cum_return = 0.0
     for d in date_list:
-        cum_principal += principal_by_date.get(d, 0)
+        # 只累加非initial的本金变动
+        day_change = 0.0
+        for p in principals:
+            if p['record_date'] == d and p['source_type'] != 'initial':
+                day_change += p['amount']
+        cum_principal += day_change
         cum_return += return_by_date.get(d, 0)
         principal_balance_list.append(fmt(cum_principal))
         return_cumulative_list.append(fmt(cum_return))

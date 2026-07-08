@@ -263,7 +263,6 @@ input,select,button,textarea{font-family:inherit}
     <h3 id="acc-modal-title">添加账户</h3>
     <div class="form-group"><label>账户名称</label><input type="text" id="m-acc-name" placeholder="例如：招商银行"></div>
     <div class="form-group"><label>账户类型</label><select id="m-acc-type"></select></div>
-    <div class="form-group"><label>初始本金（元）</label><input type="number" id="m-acc-amount" placeholder="0.00" step="0.01"></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('acc-modal')">取消</button><button class="btn btn-accent" onclick="saveAcc()">保存</button></div>
   </div>
 </div>
@@ -471,20 +470,18 @@ function openAccModal(){
   document.getElementById('acc-modal-title').textContent='添加账户';
   document.getElementById('m-acc-name').value='';
   fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');
-  document.getElementById('m-acc-amount').value='';
   document.getElementById('acc-modal').classList.add('active');
 }
 async function openEditAcc(id){
   editAccId=id;
   document.getElementById('acc-modal-title').textContent='编辑账户';
-  try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();
-  var a=d.accounts.find(function(x){return x.id===id});
-  if(a){document.getElementById('m-acc-name').value=a.name;fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');document.getElementById('m-acc-type').value=a.type;document.getElementById('m-acc-amount').value=Math.abs(a.amount)}
+  try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();var a=d.accounts.find(function(x){return x.id===id});
+  if(a){document.getElementById('m-acc-name').value=a.name;fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');document.getElementById('m-acc-type').value=a.type;}
   }catch(e){}
   document.getElementById('acc-modal').classList.add('active');
 }
 function closeModal(id){document.getElementById(id).classList.remove('active')}
-async function saveAcc(){var n=document.getElementById('m-acc-name').value.trim(),t=document.getElementById('m-acc-type').value,a=parseFloat(document.getElementById('m-acc-amount').value)||0;if(!n){toast('请输入账户名称','error');return}try{if(editAccId){var r=await fetch(API+'/accounts/'+editAccId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,type:t,amount:a})})}else{var r=await fetch(API+'/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,name:n,type:t,amount:a})})}var d=await r.json();if(d.success){toast(editAccId?'更新成功':'添加成功','success');closeModal('acc-modal');loadAccounts();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
+async function saveAcc(){var n=document.getElementById('m-acc-name').value.trim(),t=document.getElementById('m-acc-type').value;if(!n){toast('请输入账户名称','error');return}try{if(editAccId){var r=await fetch(API+'/accounts/'+editAccId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,type:t})})}else{var r=await fetch(API+'/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,name:n,type:t,amount:0})})}var d=await r.json();if(d.success){toast(editAccId?'更新成功':'添加成功','success');closeModal('acc-modal');loadAccounts();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
 async function delAcc(id){if(!confirm('确认删除该账户？\n将同步清理该账户关联的本金和收益记录。'))return;try{var r=await fetch(API+'/accounts/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadAccounts();loadDashboard();if(selectedPrincipalAccId===id){selectedPrincipalAccId=null}if(selectedReturnAccId===id){selectedReturnAccId=null}loadPrincipalAccSelector();loadReturnAccSelector()}}catch(e){}}
 
 /* Trend Charts (修改2: 默认展示最近七天) */
@@ -561,6 +558,7 @@ async function loadPrincipalAccSelector(){
     if(!selectedPrincipalAccId){
       selectedPrincipalAccId=d.accounts[0].id;
       loadPrincipalAccSelector();
+      loadPrincipals(selectedPrincipalAccId);
     }
   }catch(e){console.error(e)}
 }
@@ -682,6 +680,7 @@ async function loadReturnAccSelector(){
     if(!selectedReturnAccId){
       selectedReturnAccId=d.accounts[0].id;
       loadReturnAccSelector();
+      loadReturns(selectedReturnAccId);
     }
   }catch(e){console.error(e)}
 }
