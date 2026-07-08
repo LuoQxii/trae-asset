@@ -74,9 +74,11 @@ input,select,button,textarea{font-family:inherit}
 .type-badge.cash{background:#D1FAE5;color:#065F46}
 .type-badge.debt{background:#FEE2E2;color:#DC2626}
 .source-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.73rem;font-weight:600;background:#E0E7FF;color:#4338CA}
+.source-badge.up{background:#FEE2E2;color:#DC2626}
+.source-badge.down{background:#D1FAE5;color:#065F46}
 .return-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.73rem;font-weight:600}
-.return-badge.positive{background:#D1FAE5;color:#065F46}
-.return-badge.negative{background:#FEE2E2;color:#DC2626}
+.return-badge.positive{background:#FEE2E2;color:#DC2626}
+.return-badge.negative{background:#D1FAE5;color:#065F46}
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
 .chart-card{background:var(--bg2);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
 .chart-card h3{font-size:0.95rem;margin-bottom:12px}
@@ -197,7 +199,7 @@ input,select,button,textarea{font-family:inherit}
           <button class="btn btn-danger" onclick="openSpendModal()">- 支出</button>
         </div>
         <div class="table-header"><h3 id="principal-acc-title">请选择账户</h3><span class="info" id="principal-count"></span></div>
-        <table class="data-table"><thead><tr><th>日期</th><th>金额</th><th>来源类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="principals-tbody"></tbody></table>
+        <table class="data-table"><thead><tr><th>日期</th><th>金额</th><th>类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="principals-tbody"></tbody></table>
         <div class="summary-box principal" id="principal-summary" style="display:none"><span id="principal-total-text"></span><div class="detail" id="principal-detail-text"></div></div>
       </div>
     </div>
@@ -281,6 +283,7 @@ input,select,button,textarea{font-family:inherit}
     <h3>本金支出</h3>
     <div class="form-group"><label>日期</label><input type="date" id="m-spend-date"></div>
     <div class="form-group"><label>支出金额（元）</label><input type="number" id="m-spend-amt" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label>支出类型</label><select id="m-spend-src"></select></div>
     <div class="form-group"><label>备注（可选）</label><textarea id="m-spend-note" rows="2" placeholder="例如：日常消费、转账给他人"></textarea></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('spend-modal')">取消</button><button class="btn btn-danger" onclick="saveSpend()">确认支出</button></div>
   </div>
@@ -600,8 +603,9 @@ async function loadPrincipals(accId){
       var dt=(p.record_date||p.created_at||'').slice(0,10);
       var color=p.amount>=0?'var(--danger)':'var(--success)';
       var sign=p.amount>=0?'':'-';
+      var badgeCls=p.amount>=0?'up':'down';
       var srcLabel=getDictLabel('principal_source',p.source_type)||sourceLabels[p.source_type]||p.source_type;
-      return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td style="font-weight:700;color:'+color+';">'+sign+fmtMoney(Math.abs(p.amount))+'</td><td><span class="source-badge">'+srcLabel+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(p.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delPrincipal(\''+p.id+'\')">删除</button></td></tr>';
+      return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td style="font-weight:700;color:'+color+';">'+sign+fmtMoney(Math.abs(p.amount))+'</td><td><span class="source-badge '+badgeCls+'">'+srcLabel+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(p.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delPrincipal(\''+p.id+'\')">删除</button></td></tr>';
     }).join('');
     document.getElementById('principal-count').textContent='共 '+d.principals.length+' 条';
     document.getElementById('principal-summary').style.display='block';
@@ -623,6 +627,7 @@ function openSpendModal(){
   if(!selectedPrincipalAccId){toast('请先选择一个账户','error');return}
   document.getElementById('m-spend-date').value=getTodayStr();
   document.getElementById('m-spend-amt').value='';
+  fillDictSelect(document.getElementById('m-spend-src'),'principal_source','请选择类型');
   document.getElementById('m-spend-note').value='';
   document.getElementById('spend-modal').classList.add('active');
 }
@@ -646,12 +651,14 @@ async function savePrincipal(){
 async function saveSpend(){
   var accId=selectedPrincipalAccId;
   var amt=parseFloat(document.getElementById('m-spend-amt').value)||0;
+  var src=document.getElementById('m-spend-src').value;
   var note=document.getElementById('m-spend-note').value.trim();
   var dateVal=document.getElementById('m-spend-date').value||getTodayStr();
   if(!accId){toast('请选择账户','error');return}
   if(amt<=0){toast('支出金额必须大于0','error');return}
+  if(!src){toast('请选择支出类型','error');return}
   try{
-    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:-amt,source_type:'spend',note:note,record_date:dateVal})});
+    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:-amt,source_type:src,note:note,record_date:dateVal})});
     var d=await r.json();
     if(d.success){toast('支出记录成功','success');closeModal('spend-modal');loadPrincipals(accId);loadDashboard();loadAccounts()}
     else{toast(d.message,'error')}
