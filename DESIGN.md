@@ -8,10 +8,18 @@
 ### 1.2 技术栈
 | 层级 | 技术 |
 |------|------|
-| 后端 | Python 3 + Flask + SQLite3 |
+| 后端 | Python 3 + Flask（无第三方扩展依赖） |
 | 前端 | 原生 HTML5 + CSS3 + Vanilla JS |
 | 图表 | ECharts 5 (CDN) |
 | 数据存储 | SQLite (WAL 模式) |
+
+### 1.3 依赖说明
+项目仅依赖 Flask，无其他第三方包。CORS 通过 `@app.after_request` 手动添加响应头实现。
+
+`requirements.txt` 内容：
+```
+Flask>=2.0
+```
 
 ---
 
@@ -20,11 +28,12 @@
 ### 2.1 目录结构
 ```
 asset-demo/
-├── app.py              # Flask 后端入口
+├── app.py              # Flask 后端入口（含 init_db 模块级初始化）
+├── requirements.txt    # Python 依赖（仅 Flask）
 ├── static/
 │   └── index.html      # 单页应用前端
 ├── data/
-│   ├── asset.db        # SQLite 主数据库
+│   ├── asset.db        # SQLite 主数据库（自动创建）
 │   └── *.json          # 旧版数据备份
 └── DESIGN.md           # 本文档
 ```
@@ -33,6 +42,7 @@ asset-demo/
 - **前后端分离**：RESTful API + 单页应用
 - **数据持久化**：SQLite 数据库，WAL 模式支持并发
 - **无外键级联**：应用层处理级联删除（兼容 SQLite 外键约束）
+- **模块级初始化**：`init_db()` 在模块导入时执行，确保 WSGI 模式（如 PythonAnywhere）也能正确初始化数据库
 
 ---
 
@@ -186,6 +196,12 @@ transfers: accounts (from) → accounts (to)
 - `idx_snapshots_user` on snapshots(user_id)
 - `idx_dicts_user_type` on dict_items(user_id, dict_type)
 
+### 3.4 数据库迁移
+`init_db()` 中包含自动迁移逻辑：
+- 检测 `principals` / `returns` 表是否缺少 `record_date` 列，自动 `ALTER TABLE ADD COLUMN`
+- 已有记录的 `record_date` 使用 `substr(created_at, 1, 10)` 回填
+- 新建数据库时自动创建所有表和索引
+
 ---
 
 ## 4. API 设计
@@ -209,9 +225,10 @@ transfers: accounts (from) → accounts (to)
 - 响应：`{success, accounts: [...]}`
 
 #### POST /api/accounts
-新增账户（初始余额为 0，本金通过台账录入）
-- 请求：`{user_id, name, type, amount}`
+新增账户
+- 请求：`{user_id, name, type}`（amount 固定为 0，初始本金通过台账录入）
 - 响应：`{success, message, account}`
+- 负债账户（type=debt）的 amount 自动取负
 
 #### PUT /api/accounts/{id}
 更新账户信息（不修改余额，余额由台账管理）
@@ -225,6 +242,8 @@ transfers: accounts (from) → accounts (to)
 #### GET /api/accounts/{id}/history?user_id={id}
 获取单个账户的资产历史走势
 - 响应：`{success, dates:[], principal_balance:[], return_cumulative:[], total:[]}`
+- 从账户当前余额反推初始本金，逐日累加非 initial 记录
+- 最多返回最近 30 天数据
 
 ### 4.3 数据字典
 
@@ -251,12 +270,14 @@ transfers: accounts (from) → accounts (to)
 #### GET /api/principals?user_id={id}&account_id={?}&source_type={?}&start_date={?}&end_date={?}
 获取本金记录列表（支持按账户严格过滤）
 - 响应：`{success, principals: [...]}`
+- 按 `record_date DESC, created_at DESC` 排序
 
 #### POST /api/principals
 新增本金/支出记录
 - 请求：`{user_id, account_id, amount, source_type, note, record_date}`
 - amount > 0：收入，amount < 0：支出
 - record_date 默认当日
+- 收入时校验类型来自 `principal_income` 字典，支出时来自 `principal_spend` 字典
 - 响应：`{success, message, principal}`
 
 #### DELETE /api/principals/{id}
@@ -268,6 +289,7 @@ transfers: accounts (from) → accounts (to)
 #### GET /api/returns?user_id={id}&account_id={?}
 获取收益记录列表（支持按账户严格过滤）
 - 响应：`{success, returns: [...]}`
+- 按 `record_date DESC, created_at DESC` 排序
 
 #### POST /api/returns
 新增收益/亏损记录
@@ -288,6 +310,7 @@ transfers: accounts (from) → accounts (to)
 #### POST /api/transfers
 执行资产划转
 - 请求：`{user_id, from_account_id, to_account_id, amount, fee, transfer_type, note}`
+- 校验：转出账户余额 >= 划转金额 + 手续费，禁止同账户划转
 - 响应：`{success, message, transfer}`
 
 #### DELETE /api/transfers/{id}
@@ -299,6 +322,7 @@ transfers: accounts (from) → accounts (to)
 #### GET /api/stats?user_id={id}
 获取资产统计
 - 响应：`{success, stats: {...}}`
+- 包含：total_principal, total_return, total_assets, total_debt, structure, principal_by_source, return_by_account 等
 
 #### GET /api/snapshots?user_id={id}&period={day|week|month|year}
 获取资产快照历史
@@ -329,14 +353,14 @@ transfers: accounts (from) → accounts (to)
 
 ### 5.2 本金收入流程
 1. 用户在本金台账页面选择目标账户
-2. 点击「+ 收入」，选择收入类型、录入金额、日期、备注
+2. 点击「+ 收入」，选择收入类型（principal_income 字典）、录入金额、日期、备注
 3. 后端校验：金额 > 0，类型已选
 4. 更新账户余额（增加收入金额）
 5. 记录快照
 
 ### 5.3 本金支出流程
 1. 用户在本金台账页面选择支出账户
-2. 点击「- 支出」，选择支出类型、录入金额、日期、备注
+2. 点击「- 支出」，选择支出类型（principal_spend 字典）、录入金额、日期、备注
 3. 后端校验：金额 > 0，类型已选，余额充足
 4. 将 amount 存为负数（支出）
 5. 更新账户余额（减去支出金额）
@@ -362,14 +386,14 @@ transfers: accounts (from) → accounts (to)
 ### 5.6 级联删除策略
 | 操作 | 级联影响 |
 |------|----------|
-| 删除账户 | 同步删除该账户的本金记录和收益记录 |
+| 删除账户 | 先删关联本金和收益记录，再删账户（避免外键约束失败） |
 | 删除本金 | 账户余额回滚（减去本金金额） |
 | 删除收益 | 无余额影响（收益不修改账户余额） |
 | 删除划转 | 转出账户回滚（金额+手续费），转入账户回滚（金额） |
 
 ### 5.7 账户历史折线图
 - 双击账户行触发
-- 查询该账户所有本金和收益记录
+- 从账户当前余额反推初始本金（`actual_initial = 当前余额 - 所有非 initial 本金变动累计`）
 - 按 record_date 逐日累加，无记录日期沿用前一天余额
 - 返回本金余额、累计收益、总资产三条折线
 - 最多展示最近 30 天
@@ -388,20 +412,21 @@ transfers: accounts (from) → accounts (to)
 
 | 页面 | 路由 | 功能 |
 |------|------|------|
-| 总览 | dashboard | 统计卡片、资产结构饼图、资产走势折线图 |
+| 总览 | dashboard | 统计卡片、资产结构饼图、本金与收益占比、资产走势折线图 |
 | 账户管理 | accounts | 账户列表（含本金余额+累计收益）、增删改、双击查看历史折线图 |
-| 本金台账 | principals | 按账户展示本金流水、收入/支出录入、日期筛选 |
-| 收益台账 | returns | 按账户展示收益流水、收益/亏损录入 |
+| 本金台账 | principals | 顶部账户选择器切换账户、收入/支出录入、日期字段 |
+| 收益台账 | returns | 顶部账户选择器切换账户、收益/亏损录入、日期字段 |
 | 资产划转 | transfers | 划转记录、四种划转类型 |
-| 系统设置 | settings | 数据字典管理、重置数据、关于信息 |
+| 系统设置 | settings | 数据字典管理（5类字典CRUD）、重置数据（双重确认）、关于信息 |
 
 ### 6.3 交互设计
 
 - **资产走势折线图**：支持日/周/月/年聚合切换，默认最近 7 天
 - **指标卡片点击**：弹出对应指标的独立趋势弹窗
 - **账户管理双击**：展示该账户本金余额+累计收益+总资产三条折线
-- **本金台账账户选择**：顶部按钮条切换账户，下方只展示该账户流水
-- **数据字典管理**：系统设置页支持增删改自定义分类
+- **本金台账账户选择**：顶部按钮条切换账户，下方只展示该账户流水，选中账户后自动加载
+- **数据字典管理**：系统设置页支持增删改自定义分类，所有下拉从字典动态加载
+- **数据字典缓存**：登录后一次性加载 5 类字典到全局 `dictCache`，所有下拉动态填充
 
 ### 6.4 颜色规范
 
@@ -410,8 +435,8 @@ transfers: accounts (from) → accounts (to)
 | 元素 | 正向（增加/收入/盈利） | 负向（减少/支出/亏损） |
 |------|:------:|:------:|
 | 金额文本 | `var(--danger)` 红色 | `var(--success)` 绿色 |
-| 类型标签背景 | `#FEE2E2` 浅红 | `#D1FAE5` 浅绿 |
-| 类型标签文字 | `#DC2626` 深红 | `#065F46` 深绿 |
+| 本金类型标签 | `.source-badge.up` 浅红底深红字 | `.source-badge.down` 浅绿底深绿字 |
+| 收益类型标签 | `.return-badge.positive` 浅红底深红字 | `.return-badge.negative` 浅绿底深绿字 |
 
 ### 6.5 响应式断点
 - 桌面端：侧边栏固定，2-3 列网格
@@ -433,14 +458,16 @@ transfers: accounts (from) → accounts (to)
 - 金额不能为 0（本金/收益/划转）
 - 支出/划转时检查余额充足性
 - 同账户划转被拒绝
+- `reset_data` 接受 `data.get_json() or {}` 防止 NoneType 错误
 
 ---
 
 ## 8. 部署说明
 
-### 8.1 启动命令
+### 8.1 本地开发
 ```bash
 cd asset-demo
+pip install -r requirements.txt
 python app.py
 ```
 
@@ -448,7 +475,20 @@ python app.py
 - 本地：http://localhost:5000
 - 局域网：http://<ip>:5000
 
-### 8.3 数据备份
+### 8.3 PythonAnywhere 部署
+1. 克隆代码到 home 目录：`git clone <repo-url> ~/asset-demo`
+2. 创建 Web App（选 Python 3.x，手动配置）
+3. WSGI 配置文件内容：
+   ```python
+   import sys
+   sys.path.insert(0, '/home/<username>/asset-demo')
+   from app import app as application
+   ```
+4. 无需安装额外依赖（仅依赖 Flask，PythonAnywhere 已内置）
+5. 在 Web 面板点击 Reload
+6. 数据库 `data/asset.db` 在首次请求时自动创建
+
+### 8.4 数据备份
 SQLite 数据库为单文件 `data/asset.db`，直接复制即可备份。
 
 ---
@@ -456,16 +496,29 @@ SQLite 数据库为单文件 `data/asset.db`，直接复制即可备份。
 ## 9. 版本变更记录
 
 ### v3.1（当前版本）
-- 新增数据字典系统（`dict_items` 表），支持自定义账户类型、本金收入/支出类型、收益类型、划转类型
-- 本金/收益台账增加 `record_date` 字段，支持录入历史日期
+
+**新增功能：**
+- 数据字典系统（`dict_items` 表），支持 5 类字典自定义管理
+- 本金/收益台账 `record_date` 字段，支持录入历史日期
 - 本金收入与支出分用不同字典类型（`principal_income` / `principal_spend`）
 - 本金/收益台账改为以账户为基准展示，严格按账户过滤
-- 账户管理界面增加累计收益列，支持双击查看账户历史折线图
-- 折线图默认展示最近 7 天
-- 新增重置数据 API
+- 账户管理界面累计收益列，双击查看账户历史折线图
+- 账户历史 API（`GET /api/accounts/{id}/history`）
+- 重置数据 API（`POST /api/reset-data`，前端双重确认）
+
+**交互优化：**
+- 折线图默认展示最近 7 天，1 天时显示标记点
 - 全局颜色统一：正向增加红色，负向减少绿色
-- 移动端汉堡按钮遮挡修复
-- 去除账户初始本金输入框，余额完全由台账管理
+- 移动端汉堡按钮遮挡修复（padding-top:52px）
+- 数据字典缓存机制，所有下拉动态加载
+
+**技术改进：**
+- 移除 `flask-cors` 依赖，改用 `@app.after_request` 手动 CORS
+- 新增 `requirements.txt`
+- `init_db()` 移至模块级，确保 WSGI 导入时正确初始化
+- 去除账户创建时自动生成 initial 本金记录，余额完全由台账管理
+- 删除账户时先删台账再删账户，避免外键约束失败
+- 数据库迁移逻辑（自动添加 record_date 列）
 
 ### v3.0
 - 本金与收益双台账体系
