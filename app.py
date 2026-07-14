@@ -305,6 +305,8 @@ def init_db():
         ('security_type', 'bond', '债券', 4),
         ('security_type', 'deposit', '存款', 5),
     ]
+    # ---- 插入默认字典数据（按类型检查，避免重复） ----
+    inserted_count = 0
     for dict_type, value, label, sort_order in default_dicts:
         existing = db.execute(
             "SELECT COUNT(*) FROM dict_items WHERE dict_type=? AND value=? AND user_id='__system__'",
@@ -316,9 +318,32 @@ def init_db():
                     "INSERT INTO dict_items (id, user_id, dict_type, label, value, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     (generate_seq_id('dict_items', db), system_user, dict_type, label, value, sort_order, now_iso)
                 )
-            except Exception:
+                inserted_count += 1
+            except sqlite3.IntegrityError:
+                # ID 冲突时跳过，由后续校验重试
                 pass
     db.commit()
+
+    # ---- 校验默认字典完整性，缺失则重试 ----
+    missing_dicts = []
+    for dict_type, value, label, sort_order in default_dicts:
+        existing = db.execute(
+            "SELECT COUNT(*) FROM dict_items WHERE dict_type=? AND value=? AND user_id='__system__'",
+            (dict_type, value)
+        ).fetchone()[0]
+        if existing == 0:
+            missing_dicts.append((dict_type, value, label, sort_order))
+    if missing_dicts:
+        # 使用更大范围的 ID 避免冲突
+        max_id_row = db.execute("SELECT MAX(CAST(id AS INTEGER)) FROM dict_items WHERE id GLOB '[0-9]*'").fetchone()
+        next_id = (max_id_row[0] or 0) + 1
+        for dict_type, value, label, sort_order in missing_dicts:
+            db.execute(
+                "INSERT INTO dict_items (id, user_id, dict_type, label, value, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (f"{next_id:05d}", system_user, dict_type, label, value, sort_order, now_iso)
+            )
+            next_id += 1
+        db.commit()
 
     # ---- 清理已废弃的方向字典项 ----
     db.execute("DELETE FROM dict_items WHERE dict_type='investment_direction' AND value IN ('sell', 'redeem')")
@@ -341,9 +366,24 @@ def init_db():
                     "INSERT INTO formulas (id, user_id, name, formula, target_field, description, is_active, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (generate_seq_id('formulas', db), system_user, name, formula, target_field, description, 1, sort_order, now_iso)
                 )
-            except Exception:
+            except sqlite3.IntegrityError:
                 pass
     db.commit()
+
+    # ---- 校验内置公式完整性 ----
+    for name, formula, target_field, description, sort_order in built_in_formulas:
+        existing = db.execute(
+            "SELECT COUNT(*) FROM formulas WHERE name=? AND user_id='__system__'",
+            (name,)
+        ).fetchone()[0]
+        if existing == 0:
+            max_id_row = db.execute("SELECT MAX(CAST(id AS INTEGER)) FROM formulas WHERE id GLOB '[0-9]*'").fetchone()
+            next_id = (max_id_row[0] or 0) + 1
+            db.execute(
+                "INSERT INTO formulas (id, user_id, name, formula, target_field, description, is_active, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f"{next_id:05d}", system_user, name, formula, target_field, description, 1, sort_order, now_iso)
+            )
+            db.commit()
 
     db.commit()
     db.close()
