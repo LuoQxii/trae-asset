@@ -3,17 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>个人多账户资产管理系统 v2.0</title>
+<title>个人多账户资产管理系统 v5.0</title>
 <style>
 :root {
   --bg: #F3F4F6; --bg2: #FFFFFF; --ink: #1F2937; --muted: #6B7280; --rule: #E5E7EB;
   --accent: #0D9488; --accent-dark: #0F766E; --accent2: #F59E0B;
   --accent-light: #CCFBF1; --accent2-light: #FEF3C7;
   --danger: #EF4444; --success: #10B981; --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --builtin-bg: #EEF2FF; --builtin-color: #4338CA;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px}
 input,select,button,textarea{font-family:inherit}
+
+/* Auth */
 .auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#134E4A 0%,#0D9488 100%);padding:20px}
 .auth-card{background:var(--bg2);border-radius:20px;padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
 .auth-card h1{font-size:1.6rem;text-align:center;margin-bottom:8px}
@@ -26,13 +29,15 @@ input,select,button,textarea{font-family:inherit}
 .btn-primary{width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:1rem;font-weight:600;cursor:pointer}
 .btn-primary:hover{background:var(--accent-dark)}
 .auth-error{color:var(--danger);font-size:0.85rem;text-align:center;margin-top:12px;min-height:20px}
+
+/* App layout */
 .app-page{display:none;min-height:100vh}
 .app-page.active{display:flex}
 .sidebar{width:220px;background:var(--ink);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
 .sidebar .logo{padding:24px 20px;font-size:1rem;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.1)}
 .sidebar .logo span{color:var(--accent2)}
-.sidebar nav{flex:1;padding:12px 0}
-.sidebar nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,255,255,0.65);font-size:0.85rem;cursor:pointer}
+.sidebar nav{flex:1;padding:12px 0;overflow-y:auto}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,255,255,0.65);font-size:0.85rem;cursor:pointer;text-decoration:none}
 .sidebar nav a:hover{color:#fff;background:rgba(255,255,255,0.08)}
 .sidebar nav a.active{color:#fff;background:var(--accent)}
 .sidebar nav a .icon{font-size:1rem;width:22px;text-align:center}
@@ -41,10 +46,13 @@ input,select,button,textarea{font-family:inherit}
 .sidebar .logout-btn{margin-left:auto;color:rgba(255,255,255,0.4);cursor:pointer;font-size:0.8rem}
 .sidebar .logout-btn:hover{color:var(--danger)}
 .main-content{flex:1;margin-left:220px;min-height:100vh}
-.page-header{background:var(--bg2);padding:20px 32px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between}
+.page-header{background:var(--bg2);padding:20px 32px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .page-header h2{font-size:1.2rem}
+.page-header .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .page-body{padding:24px 32px}
 .page{display:none}.page.active{display:block}
+
+/* Metrics & Cards */
 .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
 .metric-card{background:var(--bg2);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .metric-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
@@ -52,6 +60,8 @@ input,select,button,textarea{font-family:inherit}
 .metric-card.amber::after{background:var(--accent2)}.metric-card.red::after{background:var(--danger)}
 .metric-card .mv{font-size:1.4rem;font-weight:800;line-height:1.2}
 .metric-card .ml{font-size:0.78rem;color:var(--muted);margin-top:4px}
+
+/* Tables */
 .data-table{width:100%;border-collapse:collapse;font-size:0.88rem;background:var(--bg2);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
 .data-table th{background:var(--accent);color:#fff;font-weight:600;padding:10px 14px;text-align:left;font-size:0.82rem}
 .data-table td{padding:10px 14px;border-bottom:1px solid var(--rule)}
@@ -60,6 +70,8 @@ input,select,button,textarea{font-family:inherit}
 .table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
 .table-header h3{font-size:1rem}
 .table-header .info{font-size:0.85rem;color:var(--muted)}
+
+/* Buttons */
 .btn{padding:7px 14px;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 .btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent-dark)}
 .btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#059669}
@@ -67,46 +79,78 @@ input,select,button,textarea{font-family:inherit}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--rule)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 .btn-amber{background:var(--accent2);color:#fff}.btn-amber:hover{background:#D97706}
 .btn-sm{padding:4px 9px;font-size:0.78rem}
+
+/* Badges */
 .type-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.73rem;font-weight:600}
 .type-badge.bank{background:var(--accent-light);color:var(--accent)}
 .type-badge.fund{background:#CFFAFE;color:#0E7490}
 .type-badge.stock{background:var(--accent2-light);color:#B45309}
 .type-badge.cash{background:#D1FAE5;color:#065F46}
 .type-badge.debt{background:#FEE2E2;color:#DC2626}
+.type-badge.ledger{background:#CFFAFE;color:#0E7490}
 .source-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.73rem;font-weight:600;background:#E0E7FF;color:#4338CA}
 .source-badge.up{background:#FEE2E2;color:#DC2626}
 .source-badge.down{background:#D1FAE5;color:#065F46}
 .return-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.73rem;font-weight:600}
 .return-badge.positive{background:#FEE2E2;color:#DC2626}
 .return-badge.negative{background:#D1FAE5;color:#065F46}
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.73rem;font-weight:600}
+.status-badge.active{background:#DBEAFE;color:#1D4ED8}
+.status-badge.closed{background:#E5E7EB;color:#374151}
+.builtin-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:var(--builtin-bg);color:var(--builtin-color)}
+
+/* Charts */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
 .chart-card{background:var(--bg2);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
 .chart-card h3{font-size:0.95rem;margin-bottom:12px}
 .chart-container{width:100%;min-height:320px}
+
+/* Modals */
 .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center}
 .modal-overlay.active{display:flex}
 .modal{background:var(--bg2);border-radius:16px;padding:32px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto}
+.modal.wide{max-width:720px}
+.modal.xwide{max-width:900px}
 .modal h3{font-size:1.1rem;margin-bottom:20px}
 .modal .form-group{margin-bottom:12px}
 .modal .form-group input,.modal .form-group select,.modal .form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--rule);border-radius:8px;font-size:0.92rem;color:var(--ink)}
 .modal .form-group input:focus,.modal .form-group select:focus,.modal .form-group textarea:focus{outline:none;border-color:var(--accent)}
 .modal .modal-actions{display:flex;gap:10px;margin-top:20px}
 .modal .modal-actions .btn{flex:1;justify-content:center;padding:10px}
+
+/* Summary boxes */
 .summary-box{margin-top:20px;padding:16px;border-radius:var(--radius);font-weight:600;font-size:1rem}
 .summary-box.principal{background:var(--accent-light);color:var(--accent)}
 .summary-box.return{background:var(--accent2-light);color:#B45309}
 .summary-box .detail{font-weight:400;font-size:0.85rem;color:var(--muted);margin-top:6px}
+
+/* Toast */
 .toast{position:fixed;top:20px;right:20px;z-index:999;padding:12px 20px;border-radius:10px;color:#fff;font-size:0.9rem;font-weight:500;transform:translateX(120%);transition:transform .3s}
 .toast.show{transform:translateX(0)}
 .toast.success{background:var(--success)}.toast.error{background:var(--danger)}
+
+/* Filters */
 .filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.filter-bar select,.filter-bar input{padding:7px 12px;border:1px solid var(--rule);border-radius:8px;font-size:0.85rem;color:var(--ink)}
+.filter-bar select,.filter-bar input{padding:7px 12px;border:1px solid var(--rule);border-radius:8px;font-size:0.85rem;color:var(--ink);background:var(--bg2)}
 .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--accent)}
-.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:150;background:var(--ink);color:#fff;border:none;width:40px;height:40px;border-radius:10px;font-size:1.2rem;cursor:pointer}
+
+/* Tabs */
+.tab-bar{display:flex;gap:4px;border-bottom:2px solid var(--rule);margin-bottom:16px}
+.tab-bar .tab{padding:10px 18px;font-size:0.9rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab-bar .tab:hover{color:var(--accent)}
+.tab-bar .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.sub-tab-bar{display:flex;gap:4px;margin-bottom:14px}
+.sub-tab-bar .sub-tab{padding:6px 14px;font-size:0.85rem;font-weight:600;color:var(--muted);cursor:pointer;border-radius:6px;background:var(--bg2);border:1px solid var(--rule)}
+.sub-tab-bar .sub-tab:hover{color:var(--accent);border-color:var(--accent)}
+.sub-tab-bar .sub-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Period buttons */
 .period-btn{padding:4px 12px;border:1px solid var(--rule);background:var(--bg2);color:var(--muted);border-radius:6px;font-size:0.8rem;cursor:pointer;transition:all .15s}
 .period-btn:hover{border-color:var(--accent);color:var(--accent)}
 .period-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-/* 修改1：移动端汉堡按钮遮挡修复 */
+
+/* Mobile */
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:150;background:var(--ink);color:#fff;border:none;width:40px;height:40px;border-radius:10px;font-size:1.2rem;cursor:pointer}
 @media(max-width:768px){
   .mobile-toggle{display:block!important}
   .sidebar{transform:translateX(-100%)}
@@ -117,11 +161,47 @@ input,select,button,textarea{font-family:inherit}
   .charts-grid{grid-template-columns:1fr}
   .metrics-grid{grid-template-columns:1fr 1fr}
 }
-/* 账户选择器按钮条样式 */
-.acc-selector-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.acc-selector-bar .acc-btn{padding:8px 16px;border:2px solid var(--rule);background:var(--bg2);color:var(--muted);border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .2s}
-.acc-selector-bar .acc-btn:hover{border-color:var(--accent);color:var(--accent)}
-.acc-selector-bar .acc-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+
+/* Ledger panels */
+.ledger-panel{display:none}
+.ledger-panel.active{display:block}
+.ledger-sub-panel{display:none}
+.ledger-sub-panel.active{display:block}
+
+/* Utils */
+.text-red{color:var(--danger)!important}
+.text-green{color:var(--success)!important}
+.text-muted{color:var(--muted)!important}
+.font-bold{font-weight:700!important}
+.text-right{text-align:right!important}
+
+/* Variable hints */
+.var-hint{display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.78rem;font-weight:500;background:#EEF2FF;color:#4338CA;cursor:help;margin-right:2px}
+.var-list{background:#F9FAFB;border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin-bottom:12px;max-height:160px;overflow-y:auto}
+.var-list .var-item{display:flex;gap:8px;padding:3px 0;font-size:0.82rem;border-bottom:1px solid #F3F4F6}
+.var-list .var-item:last-child{border-bottom:none}
+.var-list .var-item .vn{font-family:monospace;color:var(--accent);font-weight:600;min-width:80px}
+.var-list .var-item .vc{color:var(--ink);min-width:60px}
+.var-list .var-item .vd{color:var(--muted)}
+
+/* Account ledger modal */
+.ledger-summary{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.ledger-summary-item{flex:1;min-width:150px;background:var(--bg);border-radius:var(--radius);padding:14px;text-align:center}
+.ledger-summary-item .ls-value{font-size:1.3rem;font-weight:800}
+.ledger-summary-item .ls-label{font-size:0.8rem;color:var(--muted);margin-top:4px}
+
+/* Inline form toggle */
+.inline-toggle{color:var(--accent);cursor:pointer;font-size:0.85rem;text-decoration:underline;margin-top:10px;display:inline-block}
+.inline-toggle:hover{color:var(--accent-dark)}
+
+/* Tooltip */
+.tooltip-trigger{position:relative;cursor:help;border-bottom:1px dotted var(--muted)}
+.tooltip-trigger:hover .tooltip-content{display:block}
+.tooltip-content{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 12px;border-radius:6px;font-size:0.78rem;white-space:nowrap;z-index:300;max-width:300px;white-space:normal}
+.tooltip-content::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+
+/* Pie filter table */
+.pie-filter-table{margin-top:16px}
 </style>
 </head>
 <body>
@@ -145,26 +225,49 @@ input,select,button,textarea{font-family:inherit}
   <aside class="sidebar">
     <div class="logo">资产<span>管家</span></div>
     <nav>
-      <a class="active" data-page="dashboard" onclick="nav('dashboard')"><span class="icon">📊</span>资产总览</a>
-      <a data-page="accounts" onclick="nav('accounts')"><span class="icon">💳</span>账户管理</a>
-      <a data-page="principals" onclick="nav('principals')"><span class="icon">📥</span>本金台账</a>
-      <a data-page="returns" onclick="nav('returns')"><span class="icon">💰</span>收益台账</a>
-      <a data-page="transfers" onclick="nav('transfers')"><span class="icon">🔄</span>资产划转</a>
-      <a data-page="settings" onclick="nav('settings')"><span class="icon">⚙️</span>系统设置</a>
+      <a class="active" data-page="dashboard" onclick="nav('dashboard')"><span class="icon">&#128202;</span>资产总览</a>
+      <a data-page="accounts" onclick="nav('accounts')"><span class="icon">&#128179;</span>账户管理</a>
+      <a data-page="principals" onclick="nav('principals')"><span class="icon">&#128176;</span>本金管理</a>
+      <a data-page="securities" onclick="nav('securities')"><span class="icon">&#128209;</span>标的库</a>
+      <a data-page="investments" onclick="nav('investments')"><span class="icon">&#128200;</span>投资管理</a>
+      <a data-page="transfers" onclick="nav('transfers')"><span class="icon">&#128260;</span>资金划转</a>
+      <a data-page="ledger" onclick="nav('ledger')"><span class="icon">&#128203;</span>资金流水查询</a>
+      <a data-page="settings" onclick="nav('settings')"><span class="icon">&#9881;&#65039;</span>系统设置</a>
     </nav>
     <div class="user-info"><div class="avatar" id="user-avatar">U</div><span id="user-display">用户</span><span class="logout-btn" onclick="logout()">退出</span></div>
   </aside>
+
   <main class="main-content">
     <!-- Dashboard -->
     <div id="page-dashboard" class="page active">
-      <div class="page-header"><h2>资产总览</h2><span style="color:var(--muted);font-size:0.82rem;" id="update-time"></span></div>
+      <div class="page-header">
+        <h2>资产总览</h2>
+        <div class="actions">
+          <span style="color:var(--muted);font-size:0.82rem;" id="update-time"></span>
+        </div>
+      </div>
       <div class="page-body">
         <div class="metrics-grid" id="metrics-grid"></div>
         <div class="charts-grid">
-          <div class="chart-card"><h3>资产结构分布</h3><div class="chart-container" id="chart-pie"></div></div>
+          <div class="chart-card"><h3>资产结构分布</h3><div class="chart-container" id="chart-pie"></div><div id="pie-filter-area"></div></div>
           <div class="chart-card"><h3>本金与收益占比</h3><div class="chart-container" id="chart-pie2"></div></div>
         </div>
-        <div class="chart-card" style="margin-top:20px"><h3>各账户收益对比</h3><div class="chart-container" id="chart-bar"></div></div>
+        <div class="chart-card" style="margin-top:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+            <h3>各账户收益对比</h3>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <div class="period-btn active" id="bar-period-all" onclick="switchBarPeriod('all')">全部</div>
+              <div class="period-btn" id="bar-period-year" onclick="switchBarPeriod('year')">本年</div>
+              <div class="period-btn" id="bar-period-quarter" onclick="switchBarPeriod('quarter')">本季</div>
+              <div class="period-btn" id="bar-period-month" onclick="switchBarPeriod('month')">本月</div>
+              <span style="color:var(--rule);margin:0 4px">|</span>
+              <div class="period-btn active" id="bar-mode-cumulative" onclick="switchBarMode('cumulative')">累计收益</div>
+              <div class="period-btn" id="bar-mode-monthly" onclick="switchBarMode('monthly')">当月收益</div>
+              <div class="period-btn" id="bar-mode-daily" onclick="switchBarMode('daily')">当日收益</div>
+            </div>
+          </div>
+          <div class="chart-container" id="chart-bar"></div>
+        </div>
         <div class="chart-card" style="margin-top:20px">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px">
             <h3>资产走势</h3>
@@ -179,61 +282,172 @@ input,select,button,textarea{font-family:inherit}
         </div>
       </div>
     </div>
+
     <!-- Accounts -->
     <div id="page-accounts" class="page">
-      <div class="page-header"><h2>账户管理</h2><button class="btn btn-accent" onclick="openAccModal()">+ 添加账户</button></div>
+      <div class="page-header">
+        <h2>账户管理</h2>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="exportAccountsData()">&#128228; 导出</button>
+          <button class="btn btn-ghost" onclick="exportTable('accounts',null,true)">&#128228; 下载模板</button>
+          <label class="btn btn-ghost" style="cursor:pointer">&#128229; 导入<input type="file" id="import-accounts" style="display:none" onchange="importTable('accounts','import-accounts')"></label>
+          <button class="btn btn-accent" onclick="openAccModal()">+ 添加账户</button>
+        </div>
+      </div>
       <div class="page-body">
+        <div class="filter-bar">
+          <input type="text" id="acc-filter-search" placeholder="全局搜索..." style="min-width:180px" oninput="renderAccounts()">
+          <select id="acc-filter-type" onchange="renderAccounts()"><option value="">全部类型</option></select>
+        </div>
         <div class="table-header"><h3>全部账户</h3><span class="info" id="account-count"></span></div>
-        <table class="data-table"><thead><tr><th>账户名称</th><th>类型</th><th>本金余额</th><th>累计收益</th><th>操作</th></tr></thead><tbody id="accounts-tbody"></tbody></table>
+        <table class="data-table">
+          <thead><tr><th>账户名称</th><th>类型</th><th>本金余额</th><th>投资金额</th><th>累计收益</th><th>资产净值</th><th>操作</th></tr></thead>
+          <tbody id="accounts-tbody"></tbody>
+        </table>
       </div>
     </div>
-    <!-- Principals (修改6: 以账户为基准) -->
-    <div id="page-principals" class="page">
-      <div class="page-header"><h2>本金台账</h2></div>
-      <div class="page-body">
-        <div class="acc-selector-bar" id="principal-acc-selector">
-          <!-- 动态填充账户按钮 -->
+
+    <!-- Investments -->
+    <div id="page-investments" class="page">
+      <div class="page-header">
+        <h2>投资管理</h2>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="exportTable('investments')">&#128228; 导出</button>
+          <button class="btn btn-accent" onclick="openInvModal()">+ 新增投资</button>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:14px">
+      </div>
+      <div class="page-body">
+        <div class="filter-bar">
+          <input type="text" id="inv-filter-name" placeholder="投资名称" oninput="loadInvestments()">
+          <select id="inv-filter-type" onchange="loadInvestments()"><option value="">全部类型</option></select>
+          <select id="inv-filter-direction" onchange="loadInvestments()"><option value="">全部方向</option></select>
+          <select id="inv-filter-status" onchange="loadInvestments()"><option value="">全部状态</option><option value="active">进行中</option><option value="partial">部分减仓</option><option value="closed">已清仓</option></select>
+          <input type="number" id="inv-filter-min" placeholder="最小金额" step="0.01" oninput="loadInvestments()">
+          <input type="number" id="inv-filter-max" placeholder="最大金额" step="0.01" oninput="loadInvestments()">
+          <input type="text" id="inv-filter-search" placeholder="全局搜索..." style="min-width:180px" oninput="loadInvestments()">
+          <button class="btn btn-ghost" onclick="clearInvFilters()">清空</button>
+        </div>
+        <div class="table-header"><h3>投资标的</h3><span class="info" id="investment-count"></span></div>
+        <table class="data-table">
+          <thead><tr><th>批次</th><th>名称</th><th>代码</th><th>成本</th><th>数量</th><th>剩余数量</th><th>类型</th><th>方向</th><th>投资金额</th><th>收益金额</th><th>状态</th><th>所属账户</th><th>操作</th></tr></thead>
+          <tbody id="investments-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Securities -->
+    <div id="page-securities" class="page">
+      <div class="page-header">
+        <h2>标的库管理</h2>
+        <div class="actions">
+          <button class="btn btn-accent" onclick="openSecurityModal()">+ 新增标的</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="tab-bar" id="sec-tab-bar">
+          <div class="tab active" data-sectype="stock" onclick="switchSecTab('stock')">股票</div>
+          <div class="tab" data-sectype="fund" onclick="switchSecTab('fund')">基金</div>
+          <div class="tab" data-sectype="wealth" onclick="switchSecTab('wealth')">理财</div>
+          <div class="tab" data-sectype="bond" onclick="switchSecTab('bond')">债券</div>
+          <div class="tab" data-sectype="deposit" onclick="switchSecTab('deposit')">存款</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" id="sec-filter-search" placeholder="搜索代码或名称..." style="min-width:220px" oninput="renderSecurities()">
+        </div>
+        <div class="table-header"><h3 id="sec-table-title">股票列表</h3><span class="info" id="security-count"></span></div>
+        <table class="data-table">
+          <thead><tr><th>代码</th><th>名称</th><th id="sec-col-extra">交易所</th><th>小数位</th><th>操作</th></tr></thead>
+          <tbody id="securities-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Principals -->
+    <div id="page-principals" class="page">
+      <div class="page-header">
+        <h2>本金管理</h2>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="exportPrincipals()">&#128228; 导出</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="sub-tab-bar" id="principals-account-bar"></div>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
           <button class="btn btn-amber" onclick="openPrincipalModal()">+ 收入</button>
           <button class="btn btn-danger" onclick="openSpendModal()">- 支出</button>
         </div>
-        <div class="table-header"><h3 id="principal-acc-title">请选择账户</h3><span class="info" id="principal-count"></span></div>
-        <table class="data-table"><thead><tr><th>日期</th><th>金额</th><th>类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="principals-tbody"></tbody></table>
-        <div class="summary-box principal" id="principal-summary" style="display:none"><span id="principal-total-text"></span><div class="detail" id="principal-detail-text"></div></div>
+        <div class="table-header"><h3>本金流水</h3><span class="info" id="principal-count"></span></div>
+        <table class="data-table">
+          <thead><tr><th>日期</th><th>金额</th><th>类型</th><th>备注</th><th>操作</th></tr></thead>
+          <tbody id="principals-tbody"></tbody>
+        </table>
+        <div class="summary-box principal" id="principal-summary" style="display:none;margin-top:20px"><span id="principal-total-text"></span></div>
       </div>
     </div>
-    <!-- Returns (修改6: 以账户为基准) -->
-    <div id="page-returns" class="page">
-      <div class="page-header"><h2>收益台账</h2></div>
+
+    <!-- Ledger -->
+    <div id="page-ledger" class="page">
+      <div class="page-header">
+        <h2>资金流水查询</h2>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="exportLedgerData()">&#128228; 导出</button>
+        </div>
+      </div>
       <div class="page-body">
-        <div class="acc-selector-bar" id="return-acc-selector">
-          <!-- 动态填充账户按钮 -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--rule);padding-bottom:8px">
+          <button class="period-btn active" id="ledger-tab-account" onclick="switchLedgerTab('account')">账户台账</button>
+          <button class="period-btn" id="ledger-tab-asset" onclick="switchLedgerTab('asset')">资产台账</button>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:14px">
-          <button class="btn btn-success" onclick="openReturnModal()">+ 录入收益</button>
+        <div id="ledger-panel-account">
+          <div class="filter-bar">
+            <select id="ledger-acc-filter" onchange="loadAccountFlows()" style="min-width:160px"><option value="">全部账户</option></select>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>账户名称</th><th>流水类型</th><th>金额</th><th>类型/方向</th><th>备注</th><th>日期</th></tr></thead>
+            <tbody id="ledger-account-tbody"></tbody>
+          </table>
         </div>
-        <div class="table-header"><h3 id="return-acc-title">请选择账户</h3><span class="info" id="return-count"></span></div>
-        <table class="data-table"><thead><tr><th>日期</th><th>金额</th><th>类型</th><th>备注</th><th>操作</th></tr></thead><tbody id="returns-tbody"></tbody></table>
-        <div class="summary-box return" id="return-summary" style="display:none"><span id="return-total-text"></span><div class="detail" id="return-detail-text"></div></div>
+        <div id="ledger-panel-asset" style="display:none">
+          <div class="filter-bar">
+            <select id="ledger-asset-acc-filter" onchange="onAssetAccChange()" style="min-width:160px"><option value="">全部账户</option></select>
+            <select id="ledger-asset-inv-filter" onchange="loadAssetFlows()" style="min-width:160px"><option value="">全部标的</option></select>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>账户名称</th><th>标的名称</th><th>流水类型</th><th>金额</th><th>类型/方向</th><th>备注</th><th>日期</th></tr></thead>
+            <tbody id="ledger-asset-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
+
     <!-- Transfers -->
     <div id="page-transfers" class="page">
-      <div class="page-header"><h2>资产内部划转</h2><button class="btn btn-accent" onclick="openTransferModal()">+ 新增划转</button></div>
+      <div class="page-header">
+        <h2>资金划转</h2>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="exportTable('transfers')">&#128228; 导出</button>
+          <label class="btn btn-ghost" style="cursor:pointer">&#128229; 导入<input type="file" id="import-transfers" style="display:none" onchange="importTable('transfers','import-transfers')"></label>
+          <button class="btn btn-accent" onclick="openTransferModal()">+ 新增划转</button>
+        </div>
+      </div>
       <div class="page-body">
         <div class="table-header"><h3>划转记录</h3><span class="info" id="transfer-count"></span></div>
-        <table class="data-table"><thead><tr><th>时间</th><th>划转类型</th><th>转出账户</th><th>转入账户</th><th>金额</th><th>手续费</th><th>备注</th><th>操作</th></tr></thead><tbody id="transfers-tbody"></tbody></table>
+        <table class="data-table">
+          <thead><tr><th>时间</th><th>划转类型</th><th>转出账户</th><th>转入账户</th><th>金额</th><th>手续费</th><th>备注</th><th>操作</th></tr></thead>
+          <tbody id="transfers-tbody"></tbody>
+        </table>
         <div class="summary-box principal" id="transfer-summary" style="display:none;margin-top:20px"><span id="transfer-total-text"></span><div class="detail" id="transfer-detail-text"></div></div>
       </div>
     </div>
-    <!-- Settings (修改3+4: 数据字典管理 + 重置数据) -->
+
+    <!-- Settings -->
     <div id="page-settings" class="page">
       <div class="page-header"><h2>系统设置</h2></div>
       <div class="page-body">
+        <!-- Dict Management -->
         <div class="chart-card" style="margin-bottom:20px">
           <h3>数据字典管理</h3>
-          <p style="margin:8px 0;color:var(--muted);font-size:0.85rem">自定义账户类型、资金来源、收益类型、划转类型</p>
+          <p style="margin:8px 0;color:var(--muted);font-size:0.85rem">自定义账户类型、资金来源、收益类型、划转类型、投资类型、投资方向</p>
           <div class="filter-bar" style="margin-top:12px">
             <select id="dict-type-select" onchange="loadDictItems()">
               <option value="account_type">账户类型</option>
@@ -241,6 +455,8 @@ input,select,button,textarea{font-family:inherit}
               <option value="principal_spend">本金支出类型</option>
               <option value="return_type">收益类型</option>
               <option value="transfer_type">划转类型</option>
+              <option value="investment_type">投资类型</option>
+              <option value="investment_direction">投资方向</option>
             </select>
             <input type="text" id="dict-label-input" placeholder="显示名称" style="flex:1;max-width:150px">
             <input type="text" id="dict-value-input" placeholder="值(英文)" style="flex:1;max-width:150px">
@@ -248,11 +464,21 @@ input,select,button,textarea{font-family:inherit}
           </div>
           <div id="dict-list" style="margin-top:12px"></div>
         </div>
+
+        <!-- Formula Management -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <h3>公式管理</h3>
+          <p style="margin:8px 0;color:var(--muted);font-size:0.85rem">管理计算与统计公式</p>
+          <div style="margin-bottom:12px"><button class="btn btn-accent" onclick="openFormulaModal()">+ 新增公式</button></div>
+          <div id="formula-list"></div>
+        </div>
+
+        <!-- About -->
         <div class="chart-card">
           <h3>关于系统</h3>
-          <p style="margin:12px 0;color:var(--muted);">个人多账户资产管理系统 v2.0 — 本金与收益双台账体系</p>
-          <p style="margin:12px 0;color:var(--muted);">总资产 = 所有账户本金总和 + 全部理财累计盈亏</p>
-          <p style="margin:12px 0;color:var(--muted);">持有收益率 = 累计理财收益 / 当前持仓本金</p>
+          <p style="margin:12px 0;color:var(--muted);">个人多账户资产管理系统 v5.0 — 投资与资产双台账体系</p>
+          <p style="margin:12px 0;color:var(--muted);">总资产 = 所有账户本金总和 + 全部投资累计盈亏</p>
+          <p style="margin:12px 0;color:var(--muted);">持有收益率 = 累计投资收益 / 当前持仓本金</p>
           <div style="margin-top:16px"><button class="btn btn-danger" onclick="resetData()">重置所有数据</button></div>
         </div>
       </div>
@@ -260,38 +486,153 @@ input,select,button,textarea{font-family:inherit}
   </main>
 </div>
 
-<!-- Modals -->
+<!-- ========== Modals ========== -->
+<!-- Account Modal -->
 <div class="modal-overlay" id="acc-modal">
   <div class="modal">
     <h3 id="acc-modal-title">添加账户</h3>
     <div class="form-group"><label>账户名称</label><input type="text" id="m-acc-name" placeholder="例如：招商银行"></div>
     <div class="form-group"><label>账户类型</label><select id="m-acc-type"></select></div>
+    <div class="form-group"><label>开户日期</label><input type="date" id="m-acc-open-date"></div>
+    <div class="form-group"><label>备注</label><textarea id="m-acc-remark" rows="2" placeholder="可选"></textarea></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('acc-modal')">取消</button><button class="btn btn-accent" onclick="saveAcc()">保存</button></div>
   </div>
 </div>
-<div class="modal-overlay" id="principal-modal">
+
+<!-- Account Ledger Modal (需求3) -->
+<div class="modal-overlay" id="acc-ledger-modal">
+  <div class="modal xwide">
+    <h3 id="acc-ledger-modal-title">账户台账</h3>
+    <div class="ledger-summary" id="acc-ledger-summary"></div>
+    <div class="table-header"><h3>流水记录</h3></div>
+    <table class="data-table">
+      <thead><tr><th>日期</th><th>流水类型</th><th>金额</th><th>类型/方向</th><th>备注</th></tr></thead>
+      <tbody id="acc-ledger-tbody"></tbody>
+    </table>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-amber" onclick="openAccLedgerPrincipalModal('income')">+ 收入</button>
+      <button class="btn btn-danger" onclick="openAccLedgerPrincipalModal('spend')">- 支出</button>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('acc-ledger-modal')" style="flex:none;padding:10px 24px">关闭</button></div>
+  </div>
+</div>
+
+<!-- Account Ledger Principal Modal -->
+<div class="modal-overlay" id="acc-ledger-pr-modal">
+  <div class="modal">
+    <h3 id="acc-ledger-pr-title">录入本金收入</h3>
+    <div class="form-group"><label>账户</label><select id="m-acc-ledger-pr-acc"></select></div>
+    <div class="form-group"><label>日期</label><input type="date" id="m-acc-ledger-pr-date"></div>
+    <div class="form-group"><label>金额（元）</label><input type="number" id="m-acc-ledger-pr-amt" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label>类型</label><select id="m-acc-ledger-pr-type"></select></div>
+    <div class="form-group"><label>备注（可选）</label><textarea id="m-acc-ledger-pr-note" rows="2"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('acc-ledger-pr-modal')">取消</button><button class="btn btn-accent" onclick="saveAccLedgerPrincipal()">确认</button></div>
+  </div>
+</div>
+
+<!-- Investment Modal (改造后) -->
+<div class="modal-overlay" id="inv-modal">
+  <div class="modal wide">
+    <h3 id="inv-modal-title">新增投资</h3>
+    <div class="form-group"><label>选择标的</label><select id="m-inv-security" onchange="onInvSecurityChange()"><option value="">请选择标的</option></select></div>
+    <div style="display:flex;gap:10px">
+      <div class="form-group" style="flex:1"><label>标的代码</label><input type="text" id="m-inv-code" readonly style="background:#F3F4F6"></div>
+      <div class="form-group" style="flex:1"><label>标的类型</label><input type="text" id="m-inv-sectype" readonly style="background:#F3F4F6"></div>
+      <div class="form-group" style="flex:1"><label>小数位</label><input type="text" id="m-inv-decimals" readonly style="background:#F3F4F6"></div>
+    </div>
+    <div class="form-group"><label>所属账户</label><select id="m-inv-account"></select></div>
+    <div style="display:flex;gap:10px">
+      <div class="form-group" style="flex:1"><label>买入成本</label><input type="number" id="m-inv-cost" placeholder="0.0000" step="0.0001" oninput="calcInvAmount()"></div>
+      <div class="form-group" style="flex:1"><label>数量</label><input type="number" id="m-inv-quantity" placeholder="0" step="1" oninput="calcInvAmount()"></div>
+    </div>
+    <div class="form-group"><label>投资金额（元）</label><input type="number" id="m-inv-amount" placeholder="自动计算=成本x数量" step="0.01"></div>
+    <div class="form-group"><label>方向</label><select id="m-inv-direction"><option value="">请选择方向</option></select></div>
+    <input type="hidden" id="m-inv-status" value="active">
+    <span class="inline-toggle" onclick="toggleInvNewSecurity()">标的库里没有？手动新增标的</span>
+    <div id="inv-new-sec-form" style="display:none;margin-top:12px;padding:14px;background:#F9FAFB;border-radius:8px;border:1px solid var(--rule)">
+      <div style="font-size:0.85rem;font-weight:600;margin-bottom:8px;color:var(--muted)">快速新增标的</div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label>代码</label><input type="text" id="m-inv-newsec-code" placeholder="如 600519"></div>
+        <div class="form-group" style="flex:1"><label>名称</label><input type="text" id="m-inv-newsec-name" placeholder="如 贵州茅台"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label>类型</label><select id="m-inv-newsec-type"><option value="stock">股票</option><option value="fund">基金</option><option value="wealth">理财</option><option value="bond">债券</option><option value="deposit">存款</option></select></div>
+        <div class="form-group" style="flex:1"><label>交易所</label><input type="text" id="m-inv-newsec-exchange" placeholder="如 SH"></div>
+      </div>
+      <button class="btn btn-accent btn-sm" onclick="quickAddSecurity()">新增并选中</button>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('inv-modal')">取消</button><button class="btn btn-accent" onclick="saveInv()">保存</button></div>
+  </div>
+</div>
+
+<!-- Investment Principal Modal -->
+<div class="modal-overlay" id="inv-principal-modal">
   <div class="modal">
     <h3>录入本金</h3>
-    <div class="form-group"><label>日期</label><input type="date" id="m-pr-date"></div>
-    <div class="form-group"><label>金额（元）</label><input type="number" id="m-pr-amt" placeholder="0.00" step="0.01"></div>
-    <div class="form-group"><label>来源类型</label><select id="m-pr-src"></select></div>
-    <div class="form-group"><label>备注（可选）</label><textarea id="m-pr-note" rows="2" placeholder="例如：7月份工资"></textarea></div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('principal-modal')">取消</button><button class="btn btn-amber" onclick="savePrincipal()">确认录入</button></div>
+    <div class="form-group"><label>日期</label><input type="date" id="m-inv-pr-date"></div>
+    <div class="form-group"><label>金额（元）</label><input type="number" id="m-inv-pr-amt" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label>来源类型</label><select id="m-inv-pr-src"></select></div>
+    <div class="form-group"><label>备注（可选）</label><textarea id="m-inv-pr-note" rows="2"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('inv-principal-modal')">取消</button><button class="btn btn-amber" onclick="saveInvPrincipal()">确认录入</button></div>
   </div>
 </div>
-<div class="modal-overlay" id="spend-modal">
+
+<!-- Investment Return Modal -->
+<div class="modal-overlay" id="inv-return-modal">
   <div class="modal">
-    <h3>本金支出</h3>
-    <div class="form-group"><label>日期</label><input type="date" id="m-spend-date"></div>
-    <div class="form-group"><label>支出金额（元）</label><input type="number" id="m-spend-amt" placeholder="0.00" step="0.01"></div>
-    <div class="form-group"><label>支出类型</label><select id="m-spend-src"></select></div>
-    <div class="form-group"><label>备注（可选）</label><textarea id="m-spend-note" rows="2" placeholder="例如：日常消费、转账给他人"></textarea></div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('spend-modal')">取消</button><button class="btn btn-danger" onclick="saveSpend()">确认支出</button></div>
+    <h3>录入收益</h3>
+    <div class="form-group"><label>日期</label><input type="date" id="m-inv-ret-date"></div>
+    <div class="form-group"><label>收益金额（元）</label><input type="number" id="m-inv-ret-amt" placeholder="正数为盈利，负数为亏损" step="0.01"></div>
+    <div class="form-group"><label>收益类型</label><select id="m-inv-ret-type"></select></div>
+    <div class="form-group"><label>备注（可选）</label><textarea id="m-inv-ret-note" rows="2"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('inv-return-modal')">取消</button><button class="btn btn-success" onclick="saveInvReturn()">确认录入</button></div>
   </div>
 </div>
+
+<!-- Investment Sell Modal -->
+<div class="modal-overlay" id="inv-sell-modal">
+  <div class="modal">
+    <h3>部分卖出赎回</h3>
+    <div class="form-group"><label>当前剩余数量</label><input type="text" id="m-sell-remaining" readonly style="background:#F3F4F6"></div>
+    <div class="form-group"><label>卖出价格</label><input type="number" id="m-sell-price" placeholder="0.00" step="0.01" oninput="calcSellAmount()"></div>
+    <div class="form-group"><label>卖出数量</label><input type="number" id="m-sell-qty" placeholder="0" step="1" oninput="validateSellQty();calcSellAmount()"></div>
+    <div class="form-group"><label>卖出金额</label><input type="number" id="m-sell-amount" placeholder="0.00" step="0.01" oninput="calcSellPrice()"></div>
+    <div class="form-group"><label>日期</label><input type="date" id="m-sell-date"></div>
+    <div id="sell-qty-error" style="color:var(--danger);font-size:0.8rem;display:none">卖出数量不可大于剩余数量</div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('inv-sell-modal')">取消</button><button class="btn btn-danger" onclick="saveSell()">确认卖出</button></div>
+  </div>
+</div>
+
+<!-- Investment Close Modal -->
+<div class="modal-overlay" id="inv-close-modal">
+  <div class="modal">
+    <h3>全额清仓赎回</h3>
+    <div class="form-group"><label>当前剩余数量</label><input type="text" id="m-close-remaining" readonly style="background:#F3F4F6"></div>
+    <div class="form-group"><label>清仓价格</label><input type="number" id="m-close-price" placeholder="0.00" step="0.01" oninput="calcCloseAmount()"></div>
+    <div class="form-group"><label>清仓金额</label><input type="number" id="m-close-amount" placeholder="0.00" step="0.01" oninput="calcClosePrice()"></div>
+    <div class="form-group"><label>日期</label><input type="date" id="m-close-date"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('inv-close-modal')">取消</button><button class="btn btn-danger" onclick="saveClose()">确认清仓</button></div>
+  </div>
+</div>
+
+<!-- Investment Ledger Modal (需求6) -->
+<div class="modal-overlay" id="inv-ledger-modal">
+  <div class="modal xwide">
+    <h3 id="inv-ledger-modal-title">标的资产台账</h3>
+    <div class="ledger-summary" id="inv-ledger-summary"></div>
+    <div class="table-header"><h3>流水记录</h3></div>
+    <table class="data-table">
+      <thead><tr><th>流水类型</th><th>投资金额</th><th>收益金额</th><th>方向</th><th>备注</th></tr></thead>
+      <tbody id="inv-ledger-tbody"></tbody>
+    </table>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('inv-ledger-modal')" style="flex:none;padding:10px 24px">关闭</button></div>
+  </div>
+</div>
+
+<!-- Transfer Modal -->
 <div class="modal-overlay" id="transfer-modal">
   <div class="modal">
-    <h3>资产内部划转</h3>
+    <h3>资金划转</h3>
     <div class="form-group"><label>划转类型</label><select id="m-tr-type" onchange="onTransferTypeChange()"></select></div>
     <div class="form-group"><label>转出账户</label><select id="m-tr-from"></select></div>
     <div class="form-group"><label>转入账户</label><select id="m-tr-to"></select></div>
@@ -301,45 +642,106 @@ input,select,button,textarea{font-family:inherit}
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('transfer-modal')">取消</button><button class="btn btn-accent" onclick="saveTransfer()">确认划转</button></div>
   </div>
 </div>
-<div class="modal-overlay" id="return-modal">
-  <div class="modal">
-    <h3>录入收益</h3>
-    <div class="form-group"><label>日期</label><input type="date" id="m-ret-date"></div>
-    <div class="form-group"><label>收益金额（元）</label><input type="number" id="m-ret-amt" placeholder="正数为盈利，负数为亏损" step="0.01"></div>
-    <div class="form-group"><label>收益类型</label><select id="m-ret-type"></select></div>
-    <div class="form-group"><label>备注（可选）</label><textarea id="m-ret-note" rows="2" placeholder="例如：某指数基金Q2分红"></textarea></div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('return-modal')">取消</button><button class="btn btn-success" onclick="saveReturn()">确认录入</button></div>
+
+<!-- Formula Modal (改造后 - 需求7/8) -->
+<div class="modal-overlay" id="formula-modal">
+  <div class="modal wide">
+    <h3 id="formula-modal-title">新增公式</h3>
+    <div class="form-group"><label>公式名称</label><input type="text" id="m-fm-name" placeholder="例如：年化收益率"></div>
+    <div id="formula-var-list" class="var-list" style="display:none"></div>
+    <div class="form-group"><label>公式表达式</label><textarea id="m-fm-expr" rows="3" placeholder="例如：return / principal * 100"></textarea></div>
+    <div class="form-group"><label>备注</label><input type="text" id="m-fm-note" placeholder="可选"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('formula-modal')">取消</button><button class="btn btn-accent" onclick="saveFormula()">保存</button></div>
   </div>
 </div>
-<div class="toast" id="toast"></div>
 
-<!-- 趋势图弹窗 -->
+<!-- Security Modal (需求1) -->
+<div class="modal-overlay" id="security-modal">
+  <div class="modal">
+    <h3 id="security-modal-title">新增标的</h3>
+    <div class="form-group"><label>代码</label><input type="text" id="m-sec-code" placeholder="如 600519"></div>
+    <div class="form-group"><label>名称</label><input type="text" id="m-sec-name" placeholder="如 贵州茅台"></div>
+    <div class="form-group"><label>类型</label><select id="m-sec-type" onchange="onSecTypeChange()"><option value="stock">股票</option><option value="fund">基金</option><option value="wealth">理财</option><option value="bond">债券</option><option value="deposit">存款</option></select></div>
+    <div class="form-group" id="sec-exchange-group"><label>交易所</label><input type="text" id="m-sec-exchange" placeholder="如 SH/SZ"></div>
+    <div class="form-group" id="sec-rate-group" style="display:none"><label>利率(%)</label><input type="number" id="m-sec-rate" placeholder="如 3.5" step="0.01"></div>
+    <div class="form-group"><label>描述</label><textarea id="m-sec-desc" rows="2" placeholder="可选"></textarea></div>
+    <div class="form-group"><label>小数位</label><input type="number" id="m-sec-decimals" value="2" min="0" max="6" step="1"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('security-modal')">取消</button><button class="btn btn-accent" onclick="saveSecurity()">保存</button></div>
+  </div>
+</div>
+
+<!-- Principal Modal -->
+<div class="modal-overlay" id="principal-modal">
+  <div class="modal">
+    <h3>录入本金收入</h3>
+    <div class="form-group"><label>日期</label><input type="date" id="m-pr-date"></div>
+    <div class="form-group"><label>金额（元）</label><input type="number" id="m-pr-amt" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label>来源类型</label><select id="m-pr-src"></select></div>
+    <div class="form-group"><label>备注（可选）</label><textarea id="m-pr-note" rows="2"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('principal-modal')">取消</button><button class="btn btn-amber" onclick="savePrincipal()">确认录入</button></div>
+  </div>
+</div>
+
+<!-- Spend Modal -->
+<div class="modal-overlay" id="spend-modal">
+  <div class="modal">
+    <h3>录入本金支出</h3>
+    <div class="form-group"><label>日期</label><input type="date" id="m-sp-date"></div>
+    <div class="form-group"><label>金额（元）</label><input type="number" id="m-sp-amt" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label>支出类型</label><select id="m-sp-src"></select></div>
+    <div class="form-group"><label>备注（可选）</label><textarea id="m-sp-note" rows="2"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('spend-modal')">取消</button><button class="btn btn-danger" onclick="saveSpend()">确认录入</button></div>
+  </div>
+</div>
+
+<!-- Trend Modal -->
 <div class="modal-overlay" id="trend-modal">
-  <div class="modal" style="max-width:700px">
+  <div class="modal wide">
     <h3 id="trend-modal-title">趋势详情</h3>
     <div class="chart-container" id="chart-trend-modal" style="min-height:360px"></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('trend-modal')" style="flex:none;padding:10px 24px">关闭</button></div>
   </div>
 </div>
 
-<script>
-var API='/api', currentUser=null, isReg=false, editAccId=null, charts={};
-var dictCache={};
-var selectedPrincipalAccId=null, selectedReturnAccId=null;
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-/* 硬编码的 label 映射 (作为 fallback) */
+<script>
+/* ========== Core Variables ========== */
+var API='/api', currentUser=null, isReg=false, editAccId=null, editInvId=null, editFormulaId=null, editSecurityId=null, charts={};
+var dictCache={};
+var accountsCache=[], investmentsCache=[], principalsCache=[], securitiesCache=[];
+var trendPeriod='day';
+var ledgerTab='account', ledgerSub='summary';
+var selectedInvForRecord=null, selectedPrincipalAccountId=null;
+var currentSecTab='stock';
+var barPeriod='all', barMode='cumulative';
+var formulaVarsCache=[];
+var accLedgerAccountId=null;
+var accLedgerMode='principal';
+
+/* Hard-coded label fallbacks */
 var sourceLabels={initial:'初始存量',salary:'工资收入',side_income:'兼职收入',red_packet:'红包',gift:'馈赠',transfer:'账户划转',spend:'消费支出',other:'其他'};
 var transferLabels={cash_transfer:'现金互转',cash_to_fund:'现金转理财',fund_to_cash:'理财转现金',fund_transfer:'理财互转'};
 var typeLabels={bank:'银行存款',fund:'基金理财',stock:'股票账户',cash:'现金/零钱',debt:'信贷/负债'};
 var returnLabels={fund_dividend:'基金分红',interest:'理财利息',stock_gain:'股票浮盈',deposit_interest:'存款利息',fund_loss:'理财亏损',stock_loss:'股票浮亏'};
+var directionLabels={buy:'买入',sell:'卖出',fixed:'定投',redeem:'赎回',long:'做多',short:'做空',in:'投入',out:'取出'};
+var statusLabels={active:'进行中',partial:'部分减仓',closed:'已清仓'};
+var secTypeLabels={stock:'股票',fund:'基金',wealth:'理财',bond:'债券',deposit:'存款'};
 
-var fmtMoney=function(n){if(n===undefined||n===null)return'\u00a50.00';return'\u00a5'+Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})};
+/* ========== 需求9: formatAmount ========== */
+function formatAmount(value, decimals){
+  if(decimals===undefined||decimals===null) decimals=2;
+  if(value===undefined||value===null) return '\u00a5' + Number(0).toFixed(decimals);
+  return '\u00a5' + Number(value).toLocaleString('zh-CN',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+}
+function fmtMoney(n,dec){return formatAmount(n, dec)}
 
 function getTodayStr(){var d=new Date();var m=String(d.getMonth()+1).padStart(2,'0');var day=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+day}
 
-/* Dict Cache */
+/* ========== Dict Cache ========== */
 async function loadDictCache(){
-  var types=['account_type','principal_income','principal_spend','return_type','transfer_type'];
+  var types=['account_type','principal_income','principal_spend','return_type','transfer_type','investment_type','investment_direction'];
   for(var i=0;i<types.length;i++){
     try{
       var r=await fetch(API+'/dicts?user_id='+currentUser.id+'&dict_type='+types[i]);
@@ -355,33 +757,39 @@ function fillDictSelect(selectEl,dictType,placeholder){
     selectEl.innerHTML='<option value="">'+(placeholder||'无数据')+'</option>';
     return;
   }
-  selectEl.innerHTML=items.map(function(item){
-    return'<option value="'+item.value+'">'+item.label+'</option>';
-  }).join('');
+  var html=placeholder?'<option value="">'+placeholder+'</option>':'';
+  html+=items.map(function(item){return'<option value="'+item.value+'">'+item.label+'</option>'}).join('');
+  selectEl.innerHTML=html;
 }
 
 function getDictLabel(dictType,value){
   var items=dictCache[dictType]||[];
-  for(var i=0;i<items.length;i++){
-    if(items[i].value===value) return items[i].label;
-  }
+  for(var i=0;i<items.length;i++){if(items[i].value===value)return items[i].label}
   return value;
 }
 
-/* Auth */
-function toggleAuthMode(){isReg=!isReg;document.getElementById('auth-title').textContent=isReg?'注册':'登录';document.getElementById('auth-sub').textContent=isReg?'创建你的资产管理账号':'登录你的资产管理系统';document.getElementById('auth-submit').textContent=isReg?'注册':'登录';document.getElementById('auth-switch').innerHTML=isReg?'已有账号？<a href="#" onclick="toggleAuthMode()">去登录</a>':'还没有账号？<a href="#" onclick="toggleAuthMode()">立即注册</a>';document.getElementById('auth-error').textContent=''}
-async function handleAuth(){var u=document.getElementById('auth-username').value.trim(),p=document.getElementById('auth-password').value.trim(),e=document.getElementById('auth-error');if(!u||!p){e.textContent='请输入用户名和密码';return}
-try{
-  var r=await fetch(API+(isReg?'/register':'/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}),d=await r.json();
-  if(d.success){currentUser=d.user;enterApp()}
-  else{
-    if(!isReg && (d.message==='user not found'||d.message==='invalid credentials')){
-      e.textContent='该用户未注册 / 密码错误，请重新输入';
-    }else{
-      e.textContent=d.message;
+/* ========== Auth ========== */
+function toggleAuthMode(){
+  isReg=!isReg;
+  document.getElementById('auth-title').textContent=isReg?'注册':'登录';
+  document.getElementById('auth-sub').textContent=isReg?'创建你的资产管理账号':'登录你的资产管理系统';
+  document.getElementById('auth-submit').textContent=isReg?'注册':'登录';
+  document.getElementById('auth-switch').innerHTML=isReg?'已有账号？<a href="#" onclick="toggleAuthMode()">去登录</a>':'还没有账号？<a href="#" onclick="toggleAuthMode()">立即注册</a>';
+  document.getElementById('auth-error').textContent='';
+}
+
+async function handleAuth(){
+  var u=document.getElementById('auth-username').value.trim(),p=document.getElementById('auth-password').value.trim(),e=document.getElementById('auth-error');
+  if(!u||!p){e.textContent='请输入用户名和密码';return}
+  try{
+    var r=await fetch(API+(isReg?'/register':'/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}),d=await r.json();
+    if(d.success){currentUser=d.user;enterApp()}
+    else{
+      if(!isReg && (d.message==='user not found'||d.message==='invalid credentials')){e.textContent='该用户未注册 / 密码错误，请重新输入'}
+      else{e.textContent=d.message}
     }
-  }
-}catch(x){e.textContent='网络错误，请确保后端已启动'}}
+  }catch(x){e.textContent='网络错误，请确保后端已启动'}
+}
 
 function enterApp(){
   document.getElementById('auth-page').style.display='none';
@@ -390,109 +798,136 @@ function enterApp(){
   document.getElementById('user-avatar').textContent=currentUser.username[0].toUpperCase();
   document.getElementById('update-time').textContent='更新时间：'+new Date().toLocaleString('zh-CN');
   loadDictCache().then(function(){
-    loadDashboard();loadAccounts();
+    loadDashboard();loadAccounts();loadInvestments();
   });
 }
-function logout(){currentUser=null;document.getElementById('app-page').classList.remove('active');document.getElementById('auth-page').style.display='flex';document.getElementById('auth-username').value='';document.getElementById('auth-password').value='';document.getElementById('auth-error').textContent='';Object.values(charts).forEach(function(c){if(c&&c.dispose)c.dispose()});charts={}}
 
-/* Nav */
-function nav(page){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.sidebar nav a').forEach(function(a){a.classList.remove('active')});document.getElementById('page-'+page).classList.add('active');document.querySelector('[data-page="'+page+'"]').classList.add('active');document.querySelector('.sidebar').classList.remove('open');
-if(page==='dashboard')loadDashboard();
-if(page==='accounts')loadAccounts();
-if(page==='principals'){loadPrincipalAccSelector();loadPrincipals(selectedPrincipalAccId)}
-if(page==='returns'){loadReturnAccSelector();loadReturns(selectedReturnAccId)}
-if(page==='transfers')loadTransfers();
-if(page==='settings')loadDictItems();
-setTimeout(function(){window.dispatchEvent(new Event('resize'))},100)}
-
-/* Dashboard */
-async function loadDashboard(){try{var r=await fetch(API+'/stats?user_id='+currentUser.id),d=await r.json();if(!d.success)return;var s=d.stats;
-document.getElementById('metrics-grid').innerHTML=
-  '<div class="metric-card teal" style="cursor:pointer" onclick="openTrendModal(\'total_principal\',\'总本金趋势\')"><div class="mv">'+fmtMoney(s.total_principal)+'</div><div class="ml">总本金</div></div>'+
-  '<div class="metric-card green" style="cursor:pointer" onclick="openTrendModal(\'total_return\',\'累计收益趋势\')"><div class="mv" style="color:'+(s.total_return>=0?'var(--danger)':'var(--success)')+';">'+(s.total_return>=0?'+':'')+fmtMoney(s.total_return)+'</div><div class="ml">累计收益</div></div>'+
-  '<div class="metric-card red" style="cursor:pointer" onclick="openTrendModal(\'total_assets\',\'总资产趋势\')"><div class="mv">'+fmtMoney(s.total_assets)+'</div><div class="ml">总资产</div></div>'+
-  '<div class="metric-card amber"><div class="mv" style="color:var(--accent2);">'+s.holding_rate+'%</div><div class="ml">持有收益率</div></div>'+
-  '<div class="metric-card teal"><div class="mv" style="color:var(--accent);">'+s.annual_rate+'%</div><div class="ml">年化收益率</div></div>'+
-  '<div class="metric-card red"><div class="mv" style="color:var(--danger);">'+fmtMoney(s.total_debt)+'</div><div class="ml">负债总额</div></div>';
-if(typeof echarts==='undefined')return;onEChartsReady(function(){_renderCharts(s)})}catch(e){console.error(e)}}
-
-function _renderCharts(s){
-  var pieData=Object.keys(s.structure).map(function(k){return{value:s.structure[k],name:typeLabels[k]||k}});
-  if(!charts.pie){charts.pie=echarts.init(document.getElementById('chart-pie'));window.addEventListener('resize',function(){charts.pie&&charts.pie.resize()})}
-  charts.pie.setOption({animation:false,tooltip:{trigger:'item',formatter:'{b}: {c} ({d}%)'},color:['#0D9488','#2DD4BF','#F59E0B','#34D399'],series:[{type:'pie',radius:['40%','65%'],itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},label:{formatter:'{b}\n{d}%'},data:pieData}]});
-  if(!charts.pie2){charts.pie2=echarts.init(document.getElementById('chart-pie2'));window.addEventListener('resize',function(){charts.pie2&&charts.pie2.resize()})}
-  charts.pie2.setOption({animation:false,tooltip:{trigger:'item',formatter:'{b}: {c} ({d}%)'},color:['#0D9488','#EF4444'],series:[{type:'pie',radius:['40%','65%'],itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},label:{formatter:'{b}\n{d}%'},data:[{value:Math.abs(s.total_principal),name:'本金'},{value:Math.abs(s.total_return),name:'收益'}]}]});
-  var accs=Object.keys(s.return_by_account),vals=accs.map(function(k){return s.return_by_account[k]});
-  if(!charts.bar){charts.bar=echarts.init(document.getElementById('chart-bar'));window.addEventListener('resize',function(){charts.bar&&charts.bar.resize()})}
-  charts.bar.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>收益: '+(p[0].value>=0?'+':'')+fmtMoney(p[0].value)}},grid:{left:60,right:16,top:20,bottom:40},xAxis:{type:'category',data:accs.length?accs:['暂无数据'],axisLabel:{color:'#6B7280',rotate:accs.length>5?30:0}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'bar',data:vals.length?vals:[0],barWidth:'45%',itemStyle:{color:function(p){return p.value>=0?'#EF4444':'#10B981'},borderRadius:[4,4,0,0]}}]});
-  _loadTrendChart();
+function logout(){
+  currentUser=null;
+  document.getElementById('app-page').classList.remove('active');
+  document.getElementById('auth-page').style.display='flex';
+  document.getElementById('auth-username').value='';
+  document.getElementById('auth-password').value='';
+  document.getElementById('auth-error').textContent='';
+  Object.values(charts).forEach(function(c){if(c&&c.dispose)c.dispose()});
+  charts={};
 }
 
-/* Accounts (修改5: 去除录入本金/收益按钮, 修改7: 双击展示资产走势) */
-async function loadAccounts(){try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();if(!d.success)return;
-var tb=document.getElementById('accounts-tbody');
-tb.innerHTML=d.accounts.map(function(a){
-  var c=a.amount<0?'var(--danger)':'var(--ink)';
-  var ret=a.total_return||0;
-  var retColor=ret>=0?'var(--danger)':'var(--success)';
-  var retSign=ret>=0?'+':'';
-  return'<tr ondblclick="showAccHistory(\''+a.id+'\',\''+a.name.replace(/'/g,"\\'")+'\')"><td style="font-weight:500">'+a.name+'</td><td><span class="type-badge '+a.type+'">'+(typeLabels[a.type]||a.type)+'</span></td><td style="font-weight:700;color:'+c+'">'+fmtMoney(a.amount)+'</td><td style="font-weight:700;color:'+retColor+'">'+retSign+fmtMoney(ret)+'</td><td><button class="btn btn-ghost btn-sm" onclick="openEditAcc(\''+a.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delAcc(\''+a.id+'\')">删除</button></td></tr>';
-}).join('');
-document.getElementById('account-count').textContent='共 '+d.accounts.length+' 个账户'}catch(e){}}
+/* ========== Navigation ========== */
+function nav(page){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.sidebar nav a').forEach(function(a){a.classList.remove('active')});
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelector('[data-page="'+page+'"]').classList.add('active');
+  document.querySelector('.sidebar').classList.remove('open');
+  if(page==='dashboard')loadDashboard();
+  if(page==='accounts'){fillAccFilterTypes();loadAccounts();}
+  if(page==='principals')loadPrincipals();
+  if(page==='securities'){loadSecurities();}
+  if(page==='investments'){fillInvFilterSelects();loadInvestments();}
+  if(page==='transfers')loadTransfers();
+  if(page==='ledger'){loadLedgerFilters().then(function(){if(ledgerTab==='account')loadAccountFlows();else loadAssetFlows();});}
+  if(page==='settings'){loadDictItems();loadFormulas()}
+  setTimeout(function(){window.dispatchEvent(new Event('resize'))},100);
+}
 
-/* 修改7: 双击展示资产折线图 */
-async function showAccHistory(accId, accName){
-  document.getElementById('trend-modal-title').textContent=accName+' - 资产走势';
-  document.getElementById('trend-modal').classList.add('active');
+/* ========== Dashboard ========== */
+async function loadDashboard(){
   try{
-    var r=await fetch(API+'/accounts/'+accId+'/history?user_id='+currentUser.id);
-    var d=await r.json();
-    if(!d.success||!d.dates||d.dates.length===0){
-      document.getElementById('chart-trend-modal').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted)">暂无历史数据</div>';
-      return;
-    }
-    var labels=d.dates;
-    if(charts.trendModal)charts.trendModal.dispose();
-    charts.trendModal=echarts.init(document.getElementById('chart-trend-modal'));
-    window.addEventListener('resize',function(){charts.trendModal&&charts.trendModal.resize()});
-    charts.trendModal.setOption({
-      animation:false,
-      tooltip:{trigger:'axis',formatter:function(p){var res=p[0].axisValue+'<br/>';p.forEach(function(i){res+=i.marker+' '+i.seriesName+': \u00a5'+i.value.toFixed(2)+'<br/>';});return res}},
-      legend:{data:['本金余额','累计收益','总资产'],top:0,right:0},
-      grid:{left:60,right:20,top:32,bottom:24},
-      xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',fontSize:11}},
-      yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},
-      series:[
-        {name:'本金余额',type:'line',data:d.principal_balance,smooth:true,lineStyle:{color:'#0D9488',width:2}},
-        {name:'累计收益',type:'line',data:d.return_cumulative,smooth:true,lineStyle:{color:'#10B981',width:2}},
-        {name:'总资产',type:'line',data:d.total,smooth:true,lineStyle:{color:'#EF4444',width:2},areaStyle:{color:'rgba(239,68,68,0.06)'}}
-      ]
-    });
+    var r=await fetch(API+'/stats?user_id='+currentUser.id),d=await r.json();
+    if(!d.success)return;
+    var s=d.stats;
+    /* 需求4: 去掉年化收益率卡片 */
+    document.getElementById('metrics-grid').innerHTML=
+      '<div class="metric-card teal" style="cursor:pointer" onclick="openTrendModal(\'total_principal\',\'总本金趋势\')"><div class="mv">'+fmtMoney(s.total_principal)+'</div><div class="ml">总本金</div></div>'+
+      '<div class="metric-card green" style="cursor:pointer" onclick="openTrendModal(\'total_return\',\'累计收益趋势\')"><div class="mv" style="color:'+(s.total_return>=0?'var(--danger)':'var(--success)')+';">'+(s.total_return>=0?'+':'')+fmtMoney(s.total_return)+'</div><div class="ml">累计收益</div></div>'+
+      '<div class="metric-card red" style="cursor:pointer" onclick="openTrendModal(\'total_assets\',\'总资产趋势\')"><div class="mv">'+fmtMoney(s.total_assets)+'</div><div class="ml">总资产</div></div>'+
+      '<div class="metric-card amber"><div class="mv" style="color:var(--accent2);">'+s.holding_rate+'%</div><div class="ml">持有收益率</div></div>'+
+      '<div class="metric-card red"><div class="mv" style="color:var(--danger);">'+fmtMoney(s.total_debt)+'</div><div class="ml">负债总额</div></div>';
+    if(typeof echarts==='undefined')return;
+    onEChartsReady(function(){_renderCharts(s)});
   }catch(e){console.error(e)}
 }
 
-/* Account Modal (账户类型下拉从字典加载) */
-function openAccModal(){
-  editAccId=null;
-  document.getElementById('acc-modal-title').textContent='添加账户';
-  document.getElementById('m-acc-name').value='';
-  fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');
-  document.getElementById('acc-modal').classList.add('active');
-}
-async function openEditAcc(id){
-  editAccId=id;
-  document.getElementById('acc-modal-title').textContent='编辑账户';
-  try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();var a=d.accounts.find(function(x){return x.id===id});
-  if(a){document.getElementById('m-acc-name').value=a.name;fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');document.getElementById('m-acc-type').value=a.type;}
-  }catch(e){}
-  document.getElementById('acc-modal').classList.add('active');
-}
-function closeModal(id){document.getElementById(id).classList.remove('active')}
-async function saveAcc(){var n=document.getElementById('m-acc-name').value.trim(),t=document.getElementById('m-acc-type').value;if(!n){toast('请输入账户名称','error');return}try{if(editAccId){var r=await fetch(API+'/accounts/'+editAccId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,type:t})})}else{var r=await fetch(API+'/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,name:n,type:t,amount:0})})}var d=await r.json();if(d.success){toast(editAccId?'更新成功':'添加成功','success');closeModal('acc-modal');loadAccounts();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
-async function delAcc(id){if(!confirm('确认删除该账户？\n将同步清理该账户关联的本金和收益记录。'))return;try{var r=await fetch(API+'/accounts/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadAccounts();loadDashboard();if(selectedPrincipalAccId===id){selectedPrincipalAccId=null}if(selectedReturnAccId===id){selectedReturnAccId=null}loadPrincipalAccSelector();loadReturnAccSelector()}}catch(e){}}
+function _renderCharts(s){
+  /* 需求5: 资产结构分布环形图 - 点击过滤 */
+  var pieData=Object.keys(s.structure||{}).map(function(k){return{value:s.structure[k],name:typeLabels[k]||k}});
+  var typeKeys=Object.keys(s.structure||{});
+  if(!charts.pie){charts.pie=echarts.init(document.getElementById('chart-pie'));window.addEventListener('resize',function(){charts.pie&&charts.pie.resize()})}
+  charts.pie.setOption({animation:false,tooltip:{trigger:'item',formatter:'{b}: {c} ({d}%)'},color:['#0D9488','#2DD4BF','#F59E0B','#34D399'],series:[{type:'pie',radius:['40%','65%'],itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},label:{formatter:'{b}\n{d}%'},data:pieData.length?pieData:[{value:0,name:'暂无数据'}]}]});
+  charts.pie.off('click');
+  charts.pie.on('click',function(params){
+    var clickedName=params.name;
+    var clickedKey=null;
+    for(var tk in typeLabels){if(typeLabels[tk]===clickedName){clickedKey=tk;break}}
+    if(!clickedKey) return;
+    _renderPieFilter(clickedKey, clickedName);
+  });
+  document.getElementById('pie-filter-area').innerHTML='';
 
-/* Trend Charts (修改2: 默认展示最近七天) */
-var trendPeriod='day';
+  if(!charts.pie2){charts.pie2=echarts.init(document.getElementById('chart-pie2'));window.addEventListener('resize',function(){charts.pie2&&charts.pie2.resize()})}
+  charts.pie2.setOption({animation:false,tooltip:{trigger:'item',formatter:'{b}: {c} ({d}%)'},color:['#0D9488','#EF4444'],series:[{type:'pie',radius:['40%','65%'],itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},label:{formatter:'{b}\n{d}%'},data:[{value:Math.abs(s.total_principal||0),name:'本金'},{value:Math.abs(s.total_return||0),name:'收益'}]}]});
+
+  _loadBarChart(s);
+  _loadTrendChart();
+}
+
+/* 需求5: 点击环形图后过滤账户明细 */
+async function _renderPieFilter(typeKey, typeName){
+  try{
+    var r=await fetch(API+'/accounts?user_id='+currentUser.id);
+    var d=await r.json();
+    var accs=(d.accounts||[]).filter(function(a){return a.type===typeKey});
+    var area=document.getElementById('pie-filter-area');
+    if(!accs.length){
+      area.innerHTML='<div style="margin-top:12px;color:var(--muted);font-size:0.85rem">该类型下暂无账户</div>';
+      return;
+    }
+    var html='<div class="pie-filter-table" style="margin-top:12px"><div style="font-size:0.85rem;font-weight:600;margin-bottom:8px;color:var(--ink)">'+typeName+' - 账户明细</div>';
+    html+='<table class="data-table"><thead><tr><th>账户名称</th><th>本金余额</th><th>投资金额</th><th>累计收益</th><th>资产净值</th></tr></thead><tbody>';
+    accs.forEach(function(a){
+      var pb=a.principal_balance!=null?a.principal_balance:(a.amount||0);
+      var inv=a.investment_amount||0;
+      var nv=a.net_value!=null?a.net_value:((a.amount||0)+(a.total_return||0));
+      html+='<tr><td style="font-weight:500">'+a.name+'</td><td>'+fmtMoney(pb)+'</td><td>'+fmtMoney(inv)+'</td><td style="color:'+(a.total_return>=0?'var(--danger)':'var(--success)')+'">'+fmtMoney(a.total_return)+'</td><td style="font-weight:700">'+fmtMoney(nv)+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+    area.innerHTML=html;
+  }catch(e){console.error(e)}
+}
+
+/* 需求5: 各账户收益对比 - 时间+模式切换 */
+function switchBarPeriod(p){
+  barPeriod=p;
+  document.querySelectorAll('[id^="bar-period-"]').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('bar-period-'+p).classList.add('active');
+  _loadBarChart();
+}
+function switchBarMode(m){
+  barMode=m;
+  document.querySelectorAll('[id^="bar-mode-"]').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('bar-mode-'+m).classList.add('active');
+  _loadBarChart();
+}
+
+async function _loadBarChart(cachedStats){
+  try{
+    var params='user_id='+currentUser.id+'&bar_mode='+barMode+'&bar_period='+barPeriod;
+    var r=await fetch(API+'/stats?'+params);
+    var d=await r.json();
+    if(!d.success) return;
+    var s=d.stats;
+    var dataKey='return_by_account';
+    if(barMode==='monthly') dataKey='monthly_return_by_account';
+    else if(barMode==='daily') dataKey='daily_return_by_account';
+    var accs=Object.keys(s[dataKey]||{});
+    var vals=accs.map(function(k){return s[dataKey][k]});
+    if(!charts.bar){charts.bar=echarts.init(document.getElementById('chart-bar'));window.addEventListener('resize',function(){charts.bar&&charts.bar.resize()})}
+    var modeLabel=barMode==='cumulative'?'累计收益':barMode==='monthly'?'当月收益':'当日收益';
+    charts.bar.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>'+modeLabel+': '+(p[0].value>=0?'+':'')+fmtMoney(p[0].value)}},grid:{left:60,right:16,top:20,bottom:40},xAxis:{type:'category',data:accs.length?accs:['暂无数据'],axisLabel:{color:'#6B7280',rotate:accs.length>5?30:0}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'bar',data:vals.length?vals:[0],barWidth:'45%',itemStyle:{color:function(p){return p.value>=0?'#EF4444':'#10B981'},borderRadius:[4,4,0,0]}}]});
+  }catch(e){console.error(e)}
+}
+
 function switchTrendPeriod(p){trendPeriod=p;document.querySelectorAll('#trend-period-tabs .period-btn').forEach(function(b){b.classList.toggle('active',b.dataset.period===p)});_loadTrendChart()}
 
 async function _loadTrendChart(){
@@ -503,11 +938,9 @@ async function _loadTrendChart(){
       document.getElementById('chart-trend').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--muted)">暂无快照数据</div>';
       return;
     }
-    /* 按created_at排序，取最后7条 */
     var sorted=d.snapshots.sort(function(a,b){return(a.created_at||'').localeCompare(b.created_at||'')});
     var snaps=sorted.slice(-7);
     if(snaps.length===1){
-      /* 1条数据：只显示一个标记点 */
       var label=snaps[0].date||(snaps[0].time||'');
       if(!charts.trend){charts.trend=echarts.init(document.getElementById('chart-trend'));window.addEventListener('resize',function(){charts.trend&&charts.trend.resize()})}
       charts.trend.setOption({animation:false,tooltip:{trigger:'item',formatter:function(p){return p.name+'<br/>'+p.seriesName+': '+fmtMoney(p.value)}},legend:{data:['总本金','总资产','累计收益'],top:0,right:0,textStyle:{color:'#6B7280',fontSize:12}},grid:{left:50,right:20,top:32,bottom:24},xAxis:{type:'category',data:[label],axisLabel:{color:'#6B7280',fontSize:11}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{name:'总本金',type:'scatter',data:[snaps[0].total_principal],showSymbol:true,symbolSize:10,itemStyle:{color:'#0D9488'}},{name:'总资产',type:'scatter',data:[snaps[0].total_assets],showSymbol:true,symbolSize:10,itemStyle:{color:'#EF4444'}},{name:'累计收益',type:'scatter',data:[snaps[0].total_return],showSymbol:true,symbolSize:10,itemStyle:{color:'#10B981'}}]});
@@ -519,7 +952,7 @@ async function _loadTrendChart(){
     var aData=snaps.map(function(s){return s.total_assets});
     var rData=snaps.map(function(s){return s.total_return});
     if(!charts.trend){charts.trend=echarts.init(document.getElementById('chart-trend'));window.addEventListener('resize',function(){charts.trend&&charts.trend.resize()})}
-    charts.trend.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){var res=p[0].axisValue+'<br/>';p.forEach(function(i){res+=i.marker+' '+i.seriesName+': '+fmtMoney(i.value)+'<br/>'});return res}},legend:{data:['总本金','总资产','累计收益'],top:0,right:0,textStyle:{color:'#6B7280',fontSize:12}},grid:{left:50,right:20,top:32,bottom:24},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>8?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{name:'总本金',type:'line',data:pData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#0D9488',width:2},areaStyle:{color:'rgba(13,148,136,0.06)'}},{name:'总资产',type:'line',data:aData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#EF4444',width:2},areaStyle:{color:'rgba(239,68,68,0.06)'}},{name:'累计收益',type:'line',data:rData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#10B981',width:2}}]})
+    charts.trend.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){var res=p[0].axisValue+'<br/>';p.forEach(function(i){res+=i.marker+' '+i.seriesName+': '+fmtMoney(i.value)+'<br/>'});return res}},legend:{data:['总本金','总资产','累计收益'],top:0,right:0,textStyle:{color:'#6B7280',fontSize:12}},grid:{left:50,right:20,top:32,bottom:24},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>8?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{name:'总本金',type:'line',data:pData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#0D9488',width:2},areaStyle:{color:'rgba(13,148,136,0.06)'}},{name:'总资产',type:'line',data:aData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#EF4444',width:2},areaStyle:{color:'rgba(239,68,68,0.06)'}},{name:'累计收益',type:'line',data:rData,smooth:true,showSymbol:labels.length<=15,symbolSize:5,lineStyle:{color:'#10B981',width:2}}]});
   }catch(e){console.error(e)}
 }
 
@@ -541,86 +974,785 @@ async function openTrendModal(field,title){
     if(charts.trendModal){charts.trendModal.dispose()}
     charts.trendModal=echarts.init(document.getElementById('chart-trend-modal'));
     window.addEventListener('resize',function(){charts.trendModal&&charts.trendModal.resize()});
-    charts.trendModal.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].axisValue+'<br/>'+p[0].marker+' 金额: '+fmtMoney(p[0].value)}},grid:{left:60,right:20,top:32,bottom:32},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>10?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'line',data:values,smooth:true,showSymbol:labels.length<=20,symbolSize:6,lineStyle:{color:color,width:2},areaStyle:{color:'rgba('+parseInt(color.slice(1,3),16)+','+parseInt(color.slice(3,5),16)+','+parseInt(color.slice(5,7),16)+',0.08)'},itemStyle:{color:color}}]})
+    charts.trendModal.setOption({animation:false,tooltip:{trigger:'axis',formatter:function(p){return p[0].axisValue+'<br/>'+p[0].marker+' 金额: '+fmtMoney(p[0].value)}},grid:{left:60,right:20,top:32,bottom:32},xAxis:{type:'category',data:labels,axisLabel:{color:'#6B7280',rotate:0,interval:labels.length>10?'auto':0,fontSize:11},axisTick:{alignWithLabel:true}},yAxis:{type:'value',axisLabel:{color:'#6B7280',formatter:function(v){return'\u00a5'+v}},splitLine:{lineStyle:{color:'#E5E7EB'}}},series:[{type:'line',data:values,smooth:true,showSymbol:labels.length<=20,symbolSize:6,lineStyle:{color:color,width:2},areaStyle:{color:'rgba('+parseInt(color.slice(1,3),16)+','+parseInt(color.slice(3,5),16)+','+parseInt(color.slice(5,7),16)+',0.08)'},itemStyle:{color:color}}]});
   }catch(e){console.error(e)}
 }
 
-/* Principals (修改6: 以账户为基准) */
-async function loadPrincipalAccSelector(){
+/* ========== Accounts (需求3增强) ========== */
+async function loadAccounts(){
   try{
-    var r=await fetch(API+'/accounts?user_id='+currentUser.id);
-    var d=await r.json();
-    if(!d.success||!d.accounts.length){
-      document.getElementById('principal-acc-selector').innerHTML='<span style="color:var(--muted);font-size:0.85rem">暂无账户，请先添加</span>';
-      document.getElementById('principal-acc-title').textContent='请选择账户';
-      document.getElementById('principals-tbody').innerHTML='';
-      document.getElementById('principal-summary').style.display='none';
-      return;
-    }
-    var container=document.getElementById('principal-acc-selector');
-    container.innerHTML=d.accounts.map(function(a){
-      var isActive=selectedPrincipalAccId===a.id;
-      return'<button class="acc-btn'+(isActive?' active':'')+'" onclick="selectPrincipalAcc(\''+a.id+'\')">'+a.name+'</button>';
-    }).join('');
-    if(!selectedPrincipalAccId){
-      selectedPrincipalAccId=d.accounts[0].id;
-      loadPrincipalAccSelector();
-      loadPrincipals(selectedPrincipalAccId);
-    }
+    var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();
+    if(!d.success)return;
+    accountsCache=d.accounts||[];
+    renderAccounts();
   }catch(e){console.error(e)}
 }
 
-function selectPrincipalAcc(accId){
-  selectedPrincipalAccId=accId;
-  loadPrincipalAccSelector();
-  loadPrincipals(accId);
+function fillAccFilterTypes(){
+  var sel=document.getElementById('acc-filter-type');
+  var html='<option value="">全部类型</option>';
+  var items=dictCache['account_type']||[];
+  items.forEach(function(item){html+='<option value="'+item.value+'">'+item.label+'</option>'});
+  sel.innerHTML=html;
 }
 
-async function loadPrincipals(accId){
-  var tb=document.getElementById('principals-tbody');
-  if(!accId){
-    tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">请选择一个账户</td></tr>';
-    document.getElementById('principal-count').textContent='';
-    document.getElementById('principal-summary').style.display='none';
-    document.getElementById('principal-acc-title').textContent='请选择账户';
+function getFilteredAccounts(){
+  var searchF=document.getElementById('acc-filter-search').value.trim().toLowerCase();
+  var typeF=document.getElementById('acc-filter-type').value;
+  return accountsCache.filter(function(a){
+    if(searchF){
+      var txt=(a.name+' '+(a.type||'')+' '+(a.amount||0)+' '+(a.total_return||0)).toLowerCase();
+      if(txt.indexOf(searchF)===-1)return false;
+    }
+    if(typeF && a.type!==typeF) return false;
+    return true;
+  });
+}
+
+function getMoneyColor(val){
+  var v=parseFloat(val)||0;
+  if(v>0)return'var(--danger)';
+  if(v<0)return'var(--success)';
+  return'var(--ink)';
+}
+
+function renderAccounts(){
+  var list=getFilteredAccounts();
+  var tb=document.getElementById('accounts-tbody');
+  tb.innerHTML=list.map(function(a){
+    var pb=a.principal_balance!=null?a.principal_balance:(a.amount||0);
+    var inv=a.investment_amount||0;
+    var ret=a.total_return||0;
+    var nv=a.net_value!=null?a.net_value:((a.amount||0)+(a.total_return||0));
+    var retSign=ret>0?'+':'';
+    return'<tr ondblclick="openAccLedgerModal(\''+a.id+'\')"><td style="font-weight:500">'+a.name+'</td><td><span class="type-badge '+(a.type||'')+'">'+(typeLabels[a.type]||a.type||'-')+'</span></td><td style="font-weight:700;color:'+getMoneyColor(pb)+'">'+fmtMoney(pb)+'</td><td style="font-weight:700;color:var(--ink)">'+fmtMoney(inv)+'</td><td style="font-weight:700;color:'+getMoneyColor(ret)+'">'+retSign+fmtMoney(ret)+'</td><td style="font-weight:700;color:'+getMoneyColor(nv)+'">'+fmtMoney(nv)+'</td><td><button class="btn btn-ghost btn-sm" onclick="openEditAcc(\''+a.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delAcc(\''+a.id+'\')">删除</button></td></tr>';
+  }).join('');
+  document.getElementById('account-count').textContent='共 '+list.length+' 个账户';
+}
+
+function exportAccountsData(){
+  exportTable('accounts', getFilteredAccounts());
+}
+
+function clearAccFilters(){
+  document.getElementById('acc-filter-search').value='';
+  document.getElementById('acc-filter-type').value='';
+  renderAccounts();
+}
+
+/* 需求3: 双击账户弹出大模态弹窗 - 账户台账 */
+async function openAccLedgerModal(accId){
+  accLedgerAccountId=accId;
+  accLedgerMode='principal';
+  var acc=accountsCache.find(function(a){return a.id===accId});
+  if(!acc){toast('未找到账户','error');return}
+  document.getElementById('acc-ledger-modal-title').textContent='账户台账 - '+acc.name;
+  /* 摘要 */
+  var pb=acc.principal_balance!=null?acc.principal_balance:(acc.amount||0);
+  var inv=acc.investment_amount||0;
+  var nv=acc.net_value!=null?acc.net_value:((acc.amount||0)+(acc.total_return||0));
+  document.getElementById('acc-ledger-summary').innerHTML=
+    '<div class="ledger-summary-item" style="cursor:pointer" onclick="switchAccLedgerMode(\'principal\')"><div class="ls-value" style="color:var(--accent)">'+fmtMoney(pb)+'</div><div class="ls-label">本金余额</div></div>'+
+    '<div class="ledger-summary-item"><div class="ls-value" style="color:var(--ink)">'+fmtMoney(inv)+'</div><div class="ls-label">投资金额</div></div>'+
+    '<div class="ledger-summary-item" style="cursor:pointer" onclick="switchAccLedgerMode(\'returns\')"><div class="ls-value" style="color:'+(acc.total_return>=0?'var(--danger)':'var(--success)')+'">'+(acc.total_return>=0?'+':'')+fmtMoney(acc.total_return)+'</div><div class="ls-label">累计收益</div></div>'+
+    '<div class="ledger-summary-item"><div class="ls-value">'+fmtMoney(nv)+'</div><div class="ls-label">资产净值</div></div>';
+  await renderAccLedger();
+  document.getElementById('acc-ledger-modal').classList.add('active');
+}
+
+async function switchAccLedgerMode(mode){
+  if(accLedgerMode===mode) return;
+  accLedgerMode=mode;
+  await renderAccLedger();
+}
+
+async function renderAccLedger(){
+  var accId=accLedgerAccountId;
+  var tb=document.getElementById('acc-ledger-tbody');
+  try{
+    if(accLedgerMode==='returns'){
+      var r=await fetch(API+'/accounts/'+accId+'/realized-returns?user_id='+currentUser.id);
+      var d=await r.json();
+      var returns=d.data||[];
+      if(!returns.length){
+        tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无已实现收益</td></tr>';
+      }else{
+        tb.innerHTML=returns.map(function(row){
+          var amt=parseFloat(row.realized_return)||0;
+          var color=amt>0?'var(--danger)':amt<0?'var(--success)':'var(--ink)';
+          var sign=amt>0?'+':'';
+          return '<tr><td style="font-size:0.83rem;color:var(--muted)">'+(row.record_date||'-')+'</td><td><span class="source-badge">已实现收益</span></td><td style="font-weight:700;color:'+color+'">'+sign+fmtMoney(amt)+'</td><td style="font-size:0.83rem;color:var(--muted)">'+(row.investment_name||'-')+'</td><td style="color:var(--muted);font-size:0.78rem">'+(row.formula||'')+'</td></tr>';
+        }).join('');
+      }
+    }else{
+      var r=await fetch(API+'/ledger/account-flows?user_id='+currentUser.id+'&account_id='+accId);
+      var d=await r.json();
+      var flows=d.data||[];
+      if(!flows.length){
+        tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无流水记录</td></tr>';
+      }else{
+        var principalFlows=flows.filter(function(f){return f.flow_type==='principal'});
+        tb.innerHTML=principalFlows.map(function(row){
+          var amt=row.amount;
+          var color=amt>=0?'var(--danger)':'var(--success)';
+          var sign=amt>=0?'+':'';
+          var detail=getDictLabel(row.source_type&&row.source_type.indexOf('spend')!==-1?'principal_spend':'principal_income', row.source_type);
+          if(!detail||detail===row.source_type){detail=sourceLabels[row.source_type]||row.source_type||'-';}
+          return '<tr><td style="font-size:0.83rem;color:var(--muted)">'+(row.record_date||'-')+'</td><td><span class="source-badge">本金</span></td><td style="font-weight:700;color:'+color+'">'+sign+fmtMoney(amt)+'</td><td>'+detail+'</td><td style="color:var(--muted);font-size:0.83rem">'+(row.note||'-')+'</td></tr>';
+        }).join('');
+      }
+    }
+  }catch(e){console.error(e);tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">加载失败</td></tr>';}
+}
+
+/* 需求3: 账户台账内新增本金收支 */
+var accLedgerPrType='income';
+function openAccLedgerPrincipalModal(type){
+  accLedgerPrType=type;
+  document.getElementById('acc-ledger-pr-title').textContent=type==='income'?'录入本金收入':'录入本金支出';
+  fillAccountSelect(document.getElementById('m-acc-ledger-pr-acc'),'请选择账户');
+  document.getElementById('m-acc-ledger-pr-acc').value=accLedgerAccountId||'';
+  document.getElementById('m-acc-ledger-pr-date').value=getTodayStr();
+  document.getElementById('m-acc-ledger-pr-amt').value='';
+  fillDictSelect(document.getElementById('m-acc-ledger-pr-type'),type==='income'?'principal_income':'principal_spend','请选择类型');
+  document.getElementById('m-acc-ledger-pr-note').value='';
+  document.getElementById('acc-ledger-pr-modal').classList.add('active');
+}
+
+async function saveAccLedgerPrincipal(){
+  var accId=document.getElementById('m-acc-ledger-pr-acc').value;
+  var amt=parseFloat(document.getElementById('m-acc-ledger-pr-amt').value)||0;
+  var srcType=document.getElementById('m-acc-ledger-pr-type').value;
+  var note=document.getElementById('m-acc-ledger-pr-note').value.trim();
+  var dateVal=document.getElementById('m-acc-ledger-pr-date').value||getTodayStr();
+  if(!accId){toast('请选择账户','error');return}
+  if(amt<=0){toast('金额必须大于0','error');return}
+  try{
+    var finalAmt=accLedgerPrType==='spend'?-amt:amt;
+    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,investment_id:null,amount:finalAmt,source_type:srcType,note:note,record_date:dateVal})});
+    var d=await r.json();
+    if(d.success){
+      toast('录入成功','success');
+      closeModal('acc-ledger-pr-modal');
+      /* 刷新台账 */
+      openAccLedgerModal(accLedgerAccountId);
+      loadAccounts();loadDashboard();
+    }else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+function openAccModal(){
+  editAccId=null;
+  document.getElementById('acc-modal-title').textContent='添加账户';
+  document.getElementById('m-acc-name').value='';
+  fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');
+  document.getElementById('m-acc-open-date').value='';
+  document.getElementById('m-acc-remark').value='';
+  document.getElementById('acc-modal').classList.add('active');
+}
+
+async function openEditAcc(id){
+  editAccId=id;
+  document.getElementById('acc-modal-title').textContent='编辑账户';
+  var a=accountsCache.find(function(x){return x.id===id});
+  if(a){
+    document.getElementById('m-acc-name').value=a.name||'';
+    fillDictSelect(document.getElementById('m-acc-type'),'account_type','请选择类型');
+    document.getElementById('m-acc-type').value=a.type||'';
+    document.getElementById('m-acc-open-date').value=a.open_date||'';
+    document.getElementById('m-acc-remark').value=a.remark||'';
+  }
+  document.getElementById('acc-modal').classList.add('active');
+}
+
+async function saveAcc(){
+  var n=document.getElementById('m-acc-name').value.trim();
+  var t=document.getElementById('m-acc-type').value;
+  var od=document.getElementById('m-acc-open-date').value||null;
+  var rm=document.getElementById('m-acc-remark').value.trim();
+  if(!n){toast('请输入账户名称','error');return}
+  try{
+    if(editAccId){
+      var r=await fetch(API+'/accounts/'+editAccId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,type:t,open_date:od,remark:rm})});
+    }else{
+      var r=await fetch(API+'/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,name:n,type:t,amount:0,open_date:od,remark:rm})});
+    }
+    var d=await r.json();
+    if(d.success){toast(editAccId?'更新成功':'添加成功','success');closeModal('acc-modal');loadAccounts();loadDashboard()}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function delAcc(id){
+  if(!confirm('确认删除该账户？\n将同步清理该账户关联的投资、本金和收益记录。'))return;
+  try{var r=await fetch(API+'/accounts/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadAccounts();loadDashboard();loadInvestments();}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}
+}
+
+/* ========== Investments (需求2改造) ========== */
+function fillInvFilterSelects(){
+  fillDictSelect(document.getElementById('inv-filter-type'),'investment_type','全部类型');
+  fillDictSelect(document.getElementById('inv-filter-direction'),'investment_direction','全部方向');
+}
+
+async function loadInvestments(){
+  try{
+    var params='user_id='+currentUser.id;
+    var name=document.getElementById('inv-filter-name').value.trim();
+    var type=document.getElementById('inv-filter-type').value;
+    var dir=document.getElementById('inv-filter-direction').value;
+    var status=document.getElementById('inv-filter-status').value;
+    var minAmt=document.getElementById('inv-filter-min').value;
+    var maxAmt=document.getElementById('inv-filter-max').value;
+    var search=document.getElementById('inv-filter-search').value.trim();
+    if(name)params+='&name='+encodeURIComponent(name);
+    if(type)params+='&investment_type='+encodeURIComponent(type);
+    if(dir)params+='&direction='+encodeURIComponent(dir);
+    if(status)params+='&status='+encodeURIComponent(status);
+    if(minAmt)params+='&min_amount='+minAmt;
+    if(maxAmt)params+='&max_amount='+maxAmt;
+    if(search)params+='&search='+encodeURIComponent(search);
+    var r=await fetch(API+'/investments?'+params);
+    var d=await r.json();
+    if(!d.success)return;
+    investmentsCache=d.investments||[];
+    /* 加载returns用于计算收益金额 */
+    var retRes=await fetch(API+'/returns?user_id='+currentUser.id);
+    var retData=await retRes.json();
+    window.returnsCache=(retData.returns||retData.data||[]);
+    renderInvestments();
+  }catch(e){console.error(e)}
+}
+
+function renderInvestments(){
+  var tb=document.getElementById('investments-tbody');
+  if(!investmentsCache.length){
+    tb.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:24px;">暂无投资记录</td></tr>';
+    document.getElementById('investment-count').textContent='';
     return;
   }
-  try{
-    var url=API+'/principals?user_id='+currentUser.id+'&account_id='+accId;
-    var r=await fetch(url),d=await r.json();
-    if(!d.success)return;
-    /* 更新标题 */
-    var r2=await fetch(API+'/accounts?user_id='+currentUser.id);
-    var d2=await r2.json();
-    var accObj=null;
-    if(d2.success){accObj=d2.accounts.find(function(x){return x.id===accId})}
-    document.getElementById('principal-acc-title').textContent=accObj?accObj.name:'账户';
-    if(!d.principals.length){
-      tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无本金记录</td></tr>';
-      document.getElementById('principal-count').textContent='';
-      document.getElementById('principal-summary').style.display='none';
-      return;
+  tb.innerHTML=investmentsCache.map(function(inv,idx){
+    var amtColor=(inv.amount||0)>=0?'var(--danger)':'var(--success)';
+    var statusCls=(inv.status||'active')==='active'?'active':(inv.status==='partial'?'active':'closed');
+    var dec=inv.decimals||2;
+    var rowBg=inv.status==='closed'?'style="background:#F3F4F6"':'';
+    var remaining=inv.remaining_quantity!=null?inv.remaining_quantity:(inv.quantity||0);
+    /* 收益金额由后端根据状态计算：进行中/部分卖出用浮盈，清仓用已实现盈亏 */
+    var totalReturn=parseFloat(inv.total_return)||0;
+    var ops='';
+    if(inv.status==='active'){
+      ops='<button class="btn btn-success btn-sm" onclick="openInvReturnModal(\''+inv.id+'\')">录入收益</button> '+
+          '<button class="btn btn-amber btn-sm" onclick="openSellModal(\''+inv.id+'\')">部分卖出</button> '+
+          '<button class="btn btn-danger btn-sm" onclick="openCloseModal(\''+inv.id+'\')">全额清仓</button> '+
+          '<button class="btn btn-ghost btn-sm" onclick="openEditInv(\''+inv.id+'\')">编辑</button> '+
+          '<button class="btn btn-danger btn-sm" onclick="delInv(\''+inv.id+'\')">删除</button>';
+    }else if(inv.status==='partial'){
+      ops='<button class="btn btn-success btn-sm" onclick="openInvReturnModal(\''+inv.id+'\')">录入收益</button> '+
+          '<button class="btn btn-amber btn-sm" onclick="openSellModal(\''+inv.id+'\')">部分卖出</button> '+
+          '<button class="btn btn-danger btn-sm" onclick="openCloseModal(\''+inv.id+'\')">全额清仓</button> '+
+          '<button class="btn btn-ghost btn-sm" onclick="openEditInv(\''+inv.id+'\')">编辑</button>';
+    }else{
+      ops='<button class="btn btn-ghost btn-sm" onclick="openInvLedgerModal(\''+inv.id+'\')">查看台账</button>';
     }
-    var total=0;
-    tb.innerHTML=d.principals.map(function(p){
-      total+=p.amount;
-      var dt=(p.record_date||p.created_at||'').slice(0,10);
-      var color=p.amount>=0?'var(--danger)':'var(--success)';
-      var sign=p.amount>=0?'':'-';
-      var badgeCls=p.amount>=0?'up':'down';
-      var dictType=p.amount>=0?'principal_income':'principal_spend';
-      var srcLabel=getDictLabel(dictType,p.source_type)||sourceLabels[p.source_type]||p.source_type;
-      return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td style="font-weight:700;color:'+color+';">'+sign+fmtMoney(Math.abs(p.amount))+'</td><td><span class="source-badge '+badgeCls+'">'+srcLabel+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(p.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delPrincipal(\''+p.id+'\')">删除</button></td></tr>';
+    return'<tr ondblclick="openInvLedgerModal(\''+inv.id+'\')" '+rowBg+'>'+
+      '<td style="font-size:0.83rem;color:var(--muted)">#'+(idx+1)+'</td>'+
+      '<td style="font-weight:500">'+(inv.name||'-')+'</td>'+
+      '<td style="font-family:monospace;font-size:0.83rem">'+(inv.security_code||'-')+'</td>'+
+      '<td>'+formatAmount(inv.cost,dec)+'</td>'+
+      '<td>'+(inv.quantity||'-')+'</td>'+
+      '<td>'+remaining+'</td>'+
+      '<td><span class="type-badge">'+getDictLabel('investment_type',inv.investment_type)+'</span></td>'+
+      '<td>'+getDictLabel('investment_direction',inv.direction)+'</td>'+
+      '<td style="font-weight:700;color:'+amtColor+'">'+fmtMoney(inv.amount)+'</td>'+
+      '<td style="font-weight:700;color:'+(totalReturn>=0?'var(--danger)':'var(--success)')+'">'+(totalReturn>=0?'+':'')+fmtMoney(totalReturn)+'</td>'+
+      '<td><span class="status-badge '+statusCls+'">'+(statusLabels[inv.status]||inv.status||'-')+'</span></td>'+
+      '<td>'+(inv.account_name||'-')+'</td>'+
+      '<td>'+ops+'</td></tr>';
+  }).join('');
+  document.getElementById('investment-count').textContent='共 '+investmentsCache.length+' 条';
+}
+
+function clearInvFilters(){
+  document.getElementById('inv-filter-name').value='';
+  document.getElementById('inv-filter-type').value='';
+  document.getElementById('inv-filter-direction').value='';
+  document.getElementById('inv-filter-status').value='';
+  document.getElementById('inv-filter-min').value='';
+  document.getElementById('inv-filter-max').value='';
+  document.getElementById('inv-filter-search').value='';
+  loadInvestments();
+}
+
+/* 需求2: 改造后的新增投资弹窗 */
+async function openInvModal(){
+  editInvId=null;
+  document.getElementById('inv-modal-title').textContent='新增投资';
+  document.getElementById('inv-new-sec-form').style.display='none';
+  document.getElementById('m-inv-security').value='';
+  document.getElementById('m-inv-code').value='';
+  document.getElementById('m-inv-sectype').value='';
+  document.getElementById('m-inv-decimals').value='2';
+  document.getElementById('m-inv-cost').value='';
+  document.getElementById('m-inv-quantity').value='';
+  document.getElementById('m-inv-amount').value='';
+  fillDictSelect(document.getElementById('m-inv-direction'),'investment_direction','请选择方向');
+  document.getElementById('m-inv-direction').value='buy';
+  document.getElementById('m-inv-status').value='active';
+  fillAccountSelect(document.getElementById('m-inv-account'),'请选择账户');
+  document.getElementById('m-inv-account').value='';
+  /* 加载标的列表 */
+  await loadSecuritiesSelect();
+  document.getElementById('inv-modal').classList.add('active');
+}
+
+async function loadSecuritiesSelect(){
+  var sel=document.getElementById('m-inv-security');
+  try{
+    var r=await fetch(API+'/securities?user_id='+currentUser.id);
+    var d=await r.json();
+    var secs=d.securities||d.data||[];
+    securitiesCache=secs;
+    sel.innerHTML='<option value="">请选择标的</option>'+secs.map(function(s){
+      return '<option value="'+s.id+'" data-code="'+(s.code||'')+'" data-type="'+(s.security_type||s.type||'')+'" data-decimals="'+(s.decimals||2)+'">'+(s.code||'')+' - '+(s.name||'')+'</option>';
     }).join('');
-    document.getElementById('principal-count').textContent='共 '+d.principals.length+' 条';
-    document.getElementById('principal-summary').style.display='block';
-    document.getElementById('principal-total-text').textContent='本金台账净额：'+fmtMoney(total);
-    document.getElementById('principal-detail-text').textContent='正数为流入，负数为支出';
+  }catch(e){
+    sel.innerHTML='<option value="">请选择标的（加载失败）</option>';
+  }
+}
+
+function onInvSecurityChange(){
+  var sel=document.getElementById('m-inv-security');
+  var opt=sel.options[sel.selectedIndex];
+  if(sel.value){
+    document.getElementById('m-inv-code').value=opt.getAttribute('data-code')||'';
+    document.getElementById('m-inv-sectype').value=secTypeLabels[opt.getAttribute('data-type')]||opt.getAttribute('data-type')||'';
+    var dec=parseInt(opt.getAttribute('data-decimals'))||2;
+    document.getElementById('m-inv-decimals').value=dec;
+    document.getElementById('m-inv-cost').step='0.'+Array(dec-1).fill('0').join('')+'1';
+  }else{
+    document.getElementById('m-inv-code').value='';
+    document.getElementById('m-inv-sectype').value='';
+    document.getElementById('m-inv-decimals').value='2';
+    document.getElementById('m-inv-cost').step='0.01';
+  }
+}
+
+function calcInvAmount(){
+  var cost=parseFloat(document.getElementById('m-inv-cost').value)||0;
+  var qty=parseFloat(document.getElementById('m-inv-quantity').value)||0;
+  if(cost&&qty){
+    document.getElementById('m-inv-amount').value=(cost*qty).toFixed(2);
+  }
+}
+
+function toggleInvNewSecurity(){
+  var f=document.getElementById('inv-new-sec-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+
+/* 需求2: 快速新增标的并选中 */
+async function quickAddSecurity(){
+  var code=document.getElementById('m-inv-newsec-code').value.trim();
+  var name=document.getElementById('m-inv-newsec-name').value.trim();
+  var type=document.getElementById('m-inv-newsec-type').value;
+  var exchange=document.getElementById('m-inv-newsec-exchange').value.trim();
+  if(!code||!name){toast('请填写代码和名称','error');return}
+  try{
+    var r=await fetch(API+'/securities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,code:code,name:name,security_type:type,exchange:exchange,decimals:2})});
+    var d=await r.json();
+    if(d.success){
+      toast('标的已新增','success');
+      document.getElementById('inv-new-sec-form').style.display='none';
+      document.getElementById('m-inv-newsec-code').value='';
+      document.getElementById('m-inv-newsec-name').value='';
+      document.getElementById('m-inv-newsec-exchange').value='';
+      /* 重新加载下拉并选中 */
+      await loadSecuritiesSelect();
+      var sel=document.getElementById('m-inv-security');
+      var secId=d.id||d.security&&d.security.id;
+      if(secId){
+        sel.value=secId;
+        onInvSecurityChange();
+      }
+    }else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function openEditInv(id){
+  editInvId=id;
+  var inv=investmentsCache.find(function(x){return x.id===id});
+  if(!inv){toast('未找到投资记录','error');return}
+  document.getElementById('inv-modal-title').textContent='编辑投资';
+  document.getElementById('inv-new-sec-form').style.display='none';
+  await loadSecuritiesSelect();
+  document.getElementById('m-inv-security').value=inv.security_id||'';
+  onInvSecurityChange();
+  document.getElementById('m-inv-cost').value=inv.cost||'';
+  document.getElementById('m-inv-quantity').value=inv.quantity||'';
+  document.getElementById('m-inv-amount').value=inv.amount||'';
+  fillDictSelect(document.getElementById('m-inv-direction'),'investment_direction','请选择方向');
+  document.getElementById('m-inv-direction').value=inv.direction||'buy';
+  document.getElementById('m-inv-status').value=inv.status||'active';
+  fillAccountSelect(document.getElementById('m-inv-account'),'请选择账户');
+  document.getElementById('m-inv-account').value=inv.account_id||'';
+  document.getElementById('inv-modal').classList.add('active');
+}
+
+async function saveInv(){
+  var securitySel=document.getElementById('m-inv-security');
+  var securityId=securitySel.value;
+  var secOpt=securitySel.options[securitySel.selectedIndex];
+  var payload={
+    user_id:currentUser.id,
+    name:secOpt?(secOpt.textContent.split(' - ')[1]||secOpt.textContent):document.getElementById('m-inv-code').value,
+    investment_type:(function(v){var map={'基金':'fund','股票':'stock','理财':'wealth','债券':'bond','存款':'deposit'};return map[v]||v||''})(document.getElementById('m-inv-sectype').value),
+    direction:document.getElementById('m-inv-direction').value||'buy',
+    amount:parseFloat(document.getElementById('m-inv-amount').value)||0,
+    cost:parseFloat(document.getElementById('m-inv-cost').value)||0,
+    quantity:parseFloat(document.getElementById('m-inv-quantity').value)||0,
+    security_code:document.getElementById('m-inv-code').value,
+    security_id:securityId||null,
+    decimals:parseInt(document.getElementById('m-inv-decimals').value)||2,
+    start_date:null,
+    end_date:null,
+    status:document.getElementById('m-inv-status').value||'active',
+    account_id:document.getElementById('m-inv-account').value
+  };
+  if(!securityId&&!payload.name){toast('请选择标的','error');return}
+  if(!payload.account_id){toast('请选择所属账户','error');return}
+  try{
+    var r,d;
+    if(editInvId){r=await fetch(API+'/investments/'+editInvId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}
+    else{r=await fetch(API+'/investments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}
+    d=await r.json();
+    if(d.success){toast(editInvId?'更新成功':'添加成功','success');closeModal('inv-modal');loadInvestments();loadDashboard();}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function delInv(id){
+  if(!confirm('确认删除该投资？关联的本金和收益记录也将被清理。'))return;
+  try{var r=await fetch(API+'/investments/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadInvestments();loadDashboard();}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}
+}
+
+var selectedSellInvId=null,selectedCloseInvId=null;
+
+function openSellModal(invId){
+  selectedSellInvId=invId;
+  var inv=investmentsCache.find(function(x){return x.id===invId});
+  if(!inv){toast('未找到投资记录','error');return}
+  var remaining=inv.remaining_quantity!=null?inv.remaining_quantity:(inv.quantity||0);
+  document.getElementById('m-sell-remaining').value=remaining;
+  document.getElementById('m-sell-qty').value='';
+  document.getElementById('m-sell-amount').value='';
+  document.getElementById('m-sell-date').value=getTodayStr();
+  document.getElementById('sell-qty-error').style.display='none';
+  document.getElementById('inv-sell-modal').classList.add('active');
+}
+
+function validateSellQty(){
+  var inv=investmentsCache.find(function(x){return x.id===selectedSellInvId});
+  if(!inv)return;
+  var remaining=inv.remaining_quantity!=null?inv.remaining_quantity:(inv.quantity||0);
+  var qty=parseFloat(document.getElementById('m-sell-qty').value)||0;
+  var err=document.getElementById('sell-qty-error');
+  if(qty>remaining){err.style.display='block'}
+  else{err.style.display='none'}
+}
+
+function calcSellAmount(){
+  var price=parseFloat(document.getElementById('m-sell-price').value)||0;
+  var qty=parseFloat(document.getElementById('m-sell-qty').value)||0;
+  if(price>0&&qty>0){
+    document.getElementById('m-sell-amount').value=(price*qty).toFixed(2);
+  }
+}
+function calcSellPrice(){
+  var amt=parseFloat(document.getElementById('m-sell-amount').value)||0;
+  var qty=parseFloat(document.getElementById('m-sell-qty').value)||0;
+  if(amt>0&&qty>0){
+    document.getElementById('m-sell-price').value=(amt/qty).toFixed(4);
+  }
+}
+function calcCloseAmount(){
+  var price=parseFloat(document.getElementById('m-close-price').value)||0;
+  var qty=parseFloat(document.getElementById('m-close-remaining').value)||0;
+  if(price>0&&qty>0){
+    document.getElementById('m-close-amount').value=(price*qty).toFixed(2);
+  }
+}
+function calcClosePrice(){
+  var amt=parseFloat(document.getElementById('m-close-amount').value)||0;
+  var qty=parseFloat(document.getElementById('m-close-remaining').value)||0;
+  if(amt>0&&qty>0){
+    document.getElementById('m-close-price').value=(amt/qty).toFixed(4);
+  }
+}
+
+async function saveSell(){
+  var qty=parseFloat(document.getElementById('m-sell-qty').value)||0;
+  var price=parseFloat(document.getElementById('m-sell-price').value)||0;
+  var amt=parseFloat(document.getElementById('m-sell-amount').value)||0;
+  var dateVal=document.getElementById('m-sell-date').value||getTodayStr();
+  if(!selectedSellInvId){toast('请选择投资','error');return}
+  if(qty<=0){toast('卖出数量必须大于0','error');return}
+  try{
+    var r=await fetch(API+'/investments/'+selectedSellInvId+'/sell',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,sell_quantity:qty,sell_price:price,sell_amount:amt,record_date:dateVal})});
+    var d=await r.json();
+    if(d.success){toast('卖出成功','success');closeModal('inv-sell-modal');loadInvestments();loadDashboard();loadAccounts();}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+function openCloseModal(invId){
+  selectedCloseInvId=invId;
+  var inv=investmentsCache.find(function(x){return x.id===invId});
+  if(!inv){toast('未找到投资记录','error');return}
+  var remaining=inv.remaining_quantity!=null?inv.remaining_quantity:(inv.quantity||0);
+  document.getElementById('m-close-remaining').value=remaining;
+  document.getElementById('m-close-amount').value='';
+  document.getElementById('m-close-date').value=getTodayStr();
+  document.getElementById('inv-close-modal').classList.add('active');
+}
+
+async function saveClose(){
+  var price=parseFloat(document.getElementById('m-close-price').value)||0;
+  var amt=parseFloat(document.getElementById('m-close-amount').value)||0;
+  var dateVal=document.getElementById('m-close-date').value||getTodayStr();
+  if(!selectedCloseInvId){toast('请选择投资','error');return}
+  try{
+    var r=await fetch(API+'/investments/'+selectedCloseInvId+'/close',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,close_price:price,amount:amt,record_date:dateVal})});
+    var d=await r.json();
+    if(d.success){toast('清仓成功','success');closeModal('inv-close-modal');loadInvestments();loadDashboard();loadAccounts();}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+/* 需求6: 投资管理双击弹窗 */
+async function openInvLedgerModal(invId){
+  var inv=investmentsCache.find(function(x){return x.id===invId});
+  if(!inv){toast('未找到投资记录','error');return}
+  document.getElementById('inv-ledger-modal-title').textContent='标的资产台账 - '+(inv.name||'');
+  try{
+    var r=await fetch(API+'/investments/'+invId+'/ledger?user_id='+currentUser.id);
+    var d=await r.json();
+    var data=d.data||{};
+    var summary=data.summary||{};
+    var totalCost=parseFloat(inv.amount)||0;
+    var totalPnl=summary.total_pnl||summary.total_return||0;
+    var holdRate=totalCost>0?(totalPnl/totalCost*100).toFixed(2):0;
+    document.getElementById('inv-ledger-summary').innerHTML=
+      '<div class="ledger-summary-item"><div class="ls-value" style="color:var(--accent)">'+fmtMoney(totalCost)+'</div><div class="ls-label">总投入</div></div>'+
+      '<div class="ledger-summary-item"><div class="ls-value" style="color:'+(totalPnl>=0?'var(--danger)':'var(--success)')+'">'+(totalPnl>=0?'+':'')+fmtMoney(totalPnl)+'</div><div class="ls-label">总盈亏</div></div>'+
+      '<div class="ledger-summary-item"><div class="ls-value">'+holdRate+'%</div><div class="ls-label">持仓收益率</div></div>';
+    var flows=data.flows||data.records||[];
+    var tb=document.getElementById('inv-ledger-tbody');
+    if(!flows.length){
+      tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无流水记录</td></tr>';
+    }else{
+      tb.innerHTML=flows.map(function(row){
+        var isInv=row.flow_type==='investment';
+        var isRet=row.flow_type==='return';
+        var isRec=row.flow_type==='recovery';
+        var flowLabel=isInv?'投资':isRet?'收益':isRec?'回收':(row.flow_type||'');
+         var principalAmt=isInv?fmtMoney(row.amount):'-'; var returnAmt=isRet?fmtMoney(row.amount):'-'; var recAmt=isRec?fmtMoney(row.amount):'-'; var direction; if(isInv){direction=getDictLabel('investment_direction',row.direction);}else if(isRet){direction=getDictLabel('return_type',row.source_type||row.return_type);}else if(isRec){direction=getDictLabel('principal_income',row.source_type); if(!direction||direction===row.source_type){direction=sourceLabels[row.source_type]||row.source_type||'-';}}else{direction='-';} return '<tr><td><span class="source-badge">'+flowLabel+'</span></td><td style="font-weight:700">'+(principalAmt||recAmt||'-')+'</td><td style="font-weight:700">'+(returnAmt||'-')+'</td><td>'+(direction||'-')+'</td><td style="color:var(--muted);font-size:0.83rem">'+(row.note||'-')+'</td></tr>'; }).join(''); } }catch(e){ document.getElementById('inv-ledger-summary').innerHTML='<div class="ledger-summary-item"><div class="ls-value">'+fmtMoney(inv.amount)+'</div><div class="ls-label">总投入</div></div>'; document.getElementById('inv-ledger-tbody').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted)">加载台账失败</td></tr>'; } document.getElementById('inv-ledger-modal').classList.add('active'); }
+
+/* ========== Securities (需求1) ========== */
+async function loadSecurities(){
+  try{
+    var r=await fetch(API+'/securities?user_id='+currentUser.id);
+    var d=await r.json();
+    securitiesCache=d.securities||d.data||[];
+    renderSecurities();
   }catch(e){console.error(e)}
+}
+
+function switchSecTab(tab){
+  currentSecTab=tab;
+  document.querySelectorAll('#sec-tab-bar .tab').forEach(function(t){t.classList.toggle('active',t.getAttribute('data-sectype')===tab)});
+  var titleMap={stock:'股票',fund:'基金',wealth:'理财',bond:'债券',deposit:'存款'};
+  document.getElementById('sec-table-title').textContent=(titleMap[tab]||tab)+'列表';
+  renderSecurities();
+}
+
+function getFilteredSecurities(){
+  var search=document.getElementById('sec-filter-search').value.trim().toLowerCase();
+  return securitiesCache.filter(function(s){
+    if(s.security_type!==s.type){
+      var st=s.security_type||s.type||'';
+    }else{
+      var st=s.type||'';
+    }
+    if(st!==currentSecTab) return false;
+    if(search){
+      var txt=(s.code+' '+s.name).toLowerCase();
+      if(txt.indexOf(search)===-1) return false;
+    }
+    return true;
+  });
+}
+
+function renderSecurities(){
+  var list=getFilteredSecurities();
+  var tb=document.getElementById('securities-tbody');
+  var isDeposit=currentSecTab==='deposit';
+  document.getElementById('sec-col-extra').textContent=isDeposit?'利率(%)':'交易所';
+  if(!list.length){
+    tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无标的</td></tr>';
+    document.getElementById('security-count').textContent='';
+    return;
+  }
+  tb.innerHTML=list.map(function(s){
+    var extraVal=isDeposit?(s.rate!=null?s.rate:'-'):(s.exchange||'-');
+    return'<tr>'+
+      '<td style="font-family:monospace;font-weight:500">'+(s.code||'-')+'</td>'+
+      '<td style="font-weight:500">'+(s.name||'-')+'</td>'+
+      '<td>'+extraVal+'</td>'+
+      '<td>'+(s.decimals!=null?s.decimals:2)+'</td>'+
+      '<td><button class="btn btn-ghost btn-sm" onclick="openEditSecurity(\''+s.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delSecurity(\''+s.id+'\')">删除</button></td></tr>';
+  }).join('');
+  document.getElementById('security-count').textContent='共 '+list.length+' 个';
+}
+
+function onSecTypeChange(){
+  var type=document.getElementById('m-sec-type').value;
+  if(type==='deposit'){
+    document.getElementById('sec-exchange-group').style.display='none';
+    document.getElementById('sec-rate-group').style.display='block';
+  }else{
+    document.getElementById('sec-exchange-group').style.display='block';
+    document.getElementById('sec-rate-group').style.display='none';
+  }
+}
+
+function openSecurityModal(){
+  editSecurityId=null;
+  document.getElementById('security-modal-title').textContent='新增标的';
+  document.getElementById('m-sec-code').value='';
+  document.getElementById('m-sec-name').value='';
+  document.getElementById('m-sec-type').value=currentSecTab;
+  document.getElementById('m-sec-exchange').value='';
+  document.getElementById('m-sec-rate').value='';
+  document.getElementById('m-sec-desc').value='';
+  document.getElementById('m-sec-decimals').value='2';
+  onSecTypeChange();
+  document.getElementById('security-modal').classList.add('active');
+}
+
+async function openEditSecurity(id){
+  editSecurityId=id;
+  document.getElementById('security-modal-title').textContent='编辑标的';
+  try{
+    var r=await fetch(API+'/securities?user_id='+currentUser.id);
+    var d=await r.json();
+    var secs=d.securities||d.data||[];
+    var s=secs.find(function(x){return x.id===id});
+    if(s){
+      document.getElementById('m-sec-code').value=s.code||'';
+      document.getElementById('m-sec-name').value=s.name||'';
+      document.getElementById('m-sec-type').value=s.security_type||s.type||'stock';
+      document.getElementById('m-sec-exchange').value=s.exchange||'';
+      document.getElementById('m-sec-rate').value=s.rate!=null?s.rate:'';
+      document.getElementById('m-sec-desc').value=s.description||s.desc||'';
+      document.getElementById('m-sec-decimals').value=s.decimals!=null?s.decimals:'2';
+      onSecTypeChange();
+    }
+  }catch(e){toast('加载失败','error')}
+  document.getElementById('security-modal').classList.add('active');
+}
+
+async function saveSecurity(){
+  var code=document.getElementById('m-sec-code').value.trim();
+  var name=document.getElementById('m-sec-name').value.trim();
+  var type=document.getElementById('m-sec-type').value;
+  var exchange=document.getElementById('m-sec-exchange').value.trim();
+  var rate=document.getElementById('m-sec-rate').value;
+  var desc=document.getElementById('m-sec-desc').value.trim();
+  var decimals=parseInt(document.getElementById('m-sec-decimals').value)||2;
+  if(!code||!name){toast('请填写代码和名称','error');return}
+  try{
+    var r,d;
+    var payload={user_id:currentUser.id,code:code,name:name,security_type:type,exchange:exchange,description:desc,decimals:decimals};
+    if(type==='deposit' && rate!=='') payload.rate=parseFloat(rate);
+    if(editSecurityId){
+      r=await fetch(API+'/securities/'+editSecurityId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    }else{
+      r=await fetch(API+'/securities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    }
+    d=await r.json();
+    if(d.success){toast(editSecurityId?'更新成功':'添加成功','success');closeModal('security-modal');loadSecurities();}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function delSecurity(id){
+  if(!confirm('确认删除该标的？'))return;
+  try{
+    var r=await fetch(API+'/securities/'+id,{method:'DELETE'});
+    var d=await r.json();
+    if(d.success){toast('删除成功','success');loadSecurities();}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+/* ========== Principals ========== */
+async function loadPrincipals(){
+  if(!accountsCache.length) await loadAccounts();
+  renderPrincipalAccountBar();
+  if(!selectedPrincipalAccountId && accountsCache.length) selectedPrincipalAccountId = accountsCache[0].id;
+  if(selectedPrincipalAccountId){
+    try{
+      var r=await fetch(API+'/principals?user_id='+currentUser.id+'&account_id='+selectedPrincipalAccountId);
+      var d=await r.json();
+      if(d.success){principalsCache=d.principals||[];renderPrincipals();}
+    }catch(e){console.error(e)}
+  } else {
+    principalsCache=[];
+    renderPrincipals();
+  }
+}
+
+function renderPrincipalAccountBar(){
+  var bar=document.getElementById('principals-account-bar');
+  if(!accountsCache.length){bar.innerHTML='<span style="color:var(--muted)">暂无账户</span>';return;}
+  bar.innerHTML=accountsCache.map(function(a){
+    return '<div class="sub-tab '+(a.id===selectedPrincipalAccountId?'active':'')+'" onclick="selectPrincipalAccount(\''+a.id+'\')">'+a.name+'</div>';
+  }).join('');
+}
+
+function selectPrincipalAccount(id){
+  selectedPrincipalAccountId=id;
+  renderPrincipalAccountBar();
+  loadPrincipals();
+}
+
+function renderPrincipals(){
+  var tb=document.getElementById('principals-tbody');
+  if(!principalsCache.length){
+    tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无本金流水</td></tr>';
+    document.getElementById('principal-count').textContent='';
+    document.getElementById('principal-summary').style.display='none';
+    return;
+  }
+  var total=0;
+  tb.innerHTML=principalsCache.map(function(p){
+    var amt=p.amount||0;
+    total+=amt;
+    var isIncome=amt>=0;
+    var color=isIncome?'var(--danger)':'var(--success)';
+    var sign=isIncome?'+':'';
+    var typeLabel=isIncome?getDictLabel('principal_income',p.source_type):getDictLabel('principal_spend',p.source_type);
+    if(!typeLabel||typeLabel===p.source_type){typeLabel=sourceLabels[p.source_type]||p.source_type||'-';}
+    return'<tr><td style="font-size:0.83rem;color:var(--muted)">'+(p.record_date||'-')+'</td><td style="font-weight:700;color:'+color+'">'+sign+fmtMoney(amt)+'</td><td>'+typeLabel+'</td><td style="color:var(--muted);font-size:0.83rem">'+(p.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delPrincipal(\''+p.id+'\')">删除</button></td></tr>';
+  }).join('');
+  document.getElementById('principal-count').textContent='共 '+principalsCache.length+' 条';
+  document.getElementById('principal-summary').style.display='block';
+  var tColor=total>=0?'var(--danger)':'var(--success)';
+  var tSign=total>=0?'+':'';
+  document.getElementById('principal-total-text').innerHTML='本金净额：<span style="color:'+tColor+'">'+tSign+fmtMoney(total)+'</span>';
 }
 
 function openPrincipalModal(){
-  if(!selectedPrincipalAccId){toast('请先选择一个账户','error');return}
+  if(!selectedPrincipalAccountId){toast('请先选择账户','error');return;}
   document.getElementById('m-pr-date').value=getTodayStr();
   document.getElementById('m-pr-amt').value='';
   fillDictSelect(document.getElementById('m-pr-src'),'principal_income','请选择类型');
@@ -628,169 +1760,283 @@ function openPrincipalModal(){
   document.getElementById('principal-modal').classList.add('active');
 }
 
-function openSpendModal(){
-  if(!selectedPrincipalAccId){toast('请先选择一个账户','error');return}
-  document.getElementById('m-spend-date').value=getTodayStr();
-  document.getElementById('m-spend-amt').value='';
-  fillDictSelect(document.getElementById('m-spend-src'),'principal_spend','请选择类型');
-  document.getElementById('m-spend-note').value='';
-  document.getElementById('spend-modal').classList.add('active');
-}
-
 async function savePrincipal(){
-  var accId=selectedPrincipalAccId;
   var amt=parseFloat(document.getElementById('m-pr-amt').value)||0;
   var src=document.getElementById('m-pr-src').value;
   var note=document.getElementById('m-pr-note').value.trim();
   var dateVal=document.getElementById('m-pr-date').value||getTodayStr();
-  if(!accId){toast('请选择账户','error');return}
-  if(amt<=0){toast('金额必须大于0','error');return}
+  if(amt<=0){toast('金额必须大于0','error');return;}
   try{
-    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:amt,source_type:src,note:note,record_date:dateVal})});
+    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:selectedPrincipalAccountId,investment_id:null,amount:amt,source_type:src,note:note,record_date:dateVal})});
     var d=await r.json();
-    if(d.success){toast('本金录入成功','success');closeModal('principal-modal');loadPrincipals(accId);loadDashboard();loadAccounts()}
+    if(d.success){toast('录入成功','success');closeModal('principal-modal');loadPrincipals();loadAccounts();loadDashboard();}
     else{toast(d.message,'error')}
   }catch(e){toast('网络错误','error')}
+}
+
+function openSpendModal(){
+  if(!selectedPrincipalAccountId){toast('请先选择账户','error');return;}
+  document.getElementById('m-sp-date').value=getTodayStr();
+  document.getElementById('m-sp-amt').value='';
+  fillDictSelect(document.getElementById('m-sp-src'),'principal_spend','请选择类型');
+  document.getElementById('m-sp-note').value='';
+  document.getElementById('spend-modal').classList.add('active');
 }
 
 async function saveSpend(){
-  var accId=selectedPrincipalAccId;
-  var amt=parseFloat(document.getElementById('m-spend-amt').value)||0;
-  var src=document.getElementById('m-spend-src').value;
-  var note=document.getElementById('m-spend-note').value.trim();
-  var dateVal=document.getElementById('m-spend-date').value||getTodayStr();
-  if(!accId){toast('请选择账户','error');return}
-  if(amt<=0){toast('支出金额必须大于0','error');return}
-  if(!src){toast('请选择支出类型','error');return}
+  var amt=parseFloat(document.getElementById('m-sp-amt').value)||0;
+  var src=document.getElementById('m-sp-src').value;
+  var note=document.getElementById('m-sp-note').value.trim();
+  var dateVal=document.getElementById('m-sp-date').value||getTodayStr();
+  if(amt<=0){toast('金额必须大于0','error');return;}
   try{
-    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:-amt,source_type:src,note:note,record_date:dateVal})});
+    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:selectedPrincipalAccountId,investment_id:null,amount:-amt,source_type:src,note:note,record_date:dateVal})});
     var d=await r.json();
-    if(d.success){toast('支出记录成功','success');closeModal('spend-modal');loadPrincipals(accId);loadDashboard();loadAccounts()}
+    if(d.success){toast('录入成功','success');closeModal('spend-modal');loadPrincipals();loadAccounts();loadDashboard();}
     else{toast(d.message,'error')}
   }catch(e){toast('网络错误','error')}
 }
 
-async function delPrincipal(id){if(!confirm('确认删除？账户余额将同步扣减/回滚。'))return;try{var r=await fetch(API+'/principals/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadPrincipals(selectedPrincipalAccId);loadDashboard();loadAccounts()}}catch(e){}}
+async function delPrincipal(id){
+  if(!confirm('确认删除该记录？'))return;
+  try{var r=await fetch(API+'/principals/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadPrincipals();loadAccounts();loadDashboard();}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}
+}
 
-/* Returns (修改6: 以账户为基准) */
-async function loadReturnAccSelector(){
+function exportPrincipals(){
+  exportTable('principals', principalsCache);
+}
+
+function fillAccountSelect(sel,placeholder){
+  if(!accountsCache.length){sel.innerHTML='<option value="">'+(placeholder||'无账户')+'</option>';return}
+  sel.innerHTML='<option value="">'+(placeholder||'请选择')+'</option>'+accountsCache.map(function(a){return'<option value="'+a.id+'">'+a.name+'</option>'}).join('');
+}
+
+/* Investment Principal / Return Recording */
+function openInvPrincipalModal(invId){
+  selectedInvForRecord=investmentsCache.find(function(x){return x.id===invId});
+  if(!selectedInvForRecord){toast('未找到投资记录','error');return}
+  document.getElementById('m-inv-pr-date').value=getTodayStr();
+  document.getElementById('m-inv-pr-amt').value='';
+  fillDictSelect(document.getElementById('m-inv-pr-src'),'principal_income','请选择类型');
+  document.getElementById('m-inv-pr-note').value='';
+  document.getElementById('inv-principal-modal').classList.add('active');
+}
+
+async function saveInvPrincipal(){
+  var amt=parseFloat(document.getElementById('m-inv-pr-amt').value)||0;
+  var src=document.getElementById('m-inv-pr-src').value;
+  var note=document.getElementById('m-inv-pr-note').value.trim();
+  var dateVal=document.getElementById('m-inv-pr-date').value||getTodayStr();
+  if(!selectedInvForRecord){toast('请选择投资','error');return}
+  if(amt<=0){toast('金额必须大于0','error');return}
   try{
-    var r=await fetch(API+'/accounts?user_id='+currentUser.id);
+    var r=await fetch(API+'/principals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:selectedInvForRecord.account_id,investment_id:selectedInvForRecord.id,amount:amt,source_type:src,note:note,record_date:dateVal})});
     var d=await r.json();
-    if(!d.success||!d.accounts.length){
-      document.getElementById('return-acc-selector').innerHTML='<span style="color:var(--muted);font-size:0.85rem">暂无账户，请先添加</span>';
-      document.getElementById('return-acc-title').textContent='请选择账户';
-      document.getElementById('returns-tbody').innerHTML='';
-      document.getElementById('return-summary').style.display='none';
-      return;
-    }
-    var container=document.getElementById('return-acc-selector');
-    container.innerHTML=d.accounts.map(function(a){
-      var isActive=selectedReturnAccId===a.id;
-      return'<button class="acc-btn'+(isActive?' active':'')+'" onclick="selectReturnAcc(\''+a.id+'\')">'+a.name+'</button>';
-    }).join('');
-    if(!selectedReturnAccId){
-      selectedReturnAccId=d.accounts[0].id;
-      loadReturnAccSelector();
-      loadReturns(selectedReturnAccId);
-    }
-  }catch(e){console.error(e)}
+    if(d.success){toast('本金录入成功','success');closeModal('inv-principal-modal');loadInvestments();loadDashboard();loadAccounts();}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
 }
 
-function selectReturnAcc(accId){
-  selectedReturnAccId=accId;
-  loadReturnAccSelector();
-  loadReturns(accId);
+function openInvReturnModal(invId){
+  selectedInvForRecord=investmentsCache.find(function(x){return x.id===invId});
+  if(!selectedInvForRecord){toast('未找到投资记录','error');return}
+  document.getElementById('m-inv-ret-date').value=getTodayStr();
+  document.getElementById('m-inv-ret-amt').value='';
+  fillReturnTypeSelect(document.getElementById('m-inv-ret-type'),selectedInvForRecord);
+  document.getElementById('m-inv-ret-note').value='';
+  document.getElementById('inv-return-modal').classList.add('active');
 }
 
-async function loadReturns(accId){
-  var tb=document.getElementById('returns-tbody');
-  if(!accId){
-    tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">请选择一个账户</td></tr>';
-    document.getElementById('return-count').textContent='';
-    document.getElementById('return-summary').style.display='none';
-    document.getElementById('return-acc-title').textContent='请选择账户';
-    return;
+function fillReturnTypeSelect(sel,inv){
+  var invType=inv.investment_type||inv.security_type||'';
+  var allowedMap={
+    stock:['stock_gain','stock_loss'],
+    fund:['fund_dividend','fund_loss'],
+    wealth:['interest','fund_loss'],
+    bond:['interest','fund_loss'],
+    deposit:['deposit_interest']
+  };
+  var allowed=allowedMap[invType]||[];
+  var items=dictCache['return_type']||[];
+  if(!items.length){sel.innerHTML='<option value="">无数据</option>';return;}
+  var matched=[];
+  items.forEach(function(item){if(allowed.indexOf(item.value)!==-1){matched.push(item)}});
+  if(matched.length===1){
+    sel.innerHTML='<option value="'+matched[0].value+'">'+matched[0].label+'</option>';
+    sel.value=matched[0].value;
+  }else{
+    var html='<option value="">请选择类型</option>';
+    matched.forEach(function(item){html+='<option value="'+item.value+'">'+item.label+'</option>'});
+    sel.innerHTML=html;
   }
-  try{
-    var url=API+'/returns?user_id='+currentUser.id+'&account_id='+accId;
-    var r=await fetch(url),d=await r.json();
-    if(!d.success)return;
-    /* 更新标题 */
-    var r2=await fetch(API+'/accounts?user_id='+currentUser.id);
-    var d2=await r2.json();
-    var accObj=null;
-    if(d2.success){accObj=d2.accounts.find(function(x){return x.id===accId})}
-    document.getElementById('return-acc-title').textContent=accObj?accObj.name:'账户';
-    if(!d.returns.length){
-      tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">暂无收益记录</td></tr>';
-      document.getElementById('return-count').textContent='';
-      document.getElementById('return-summary').style.display='none';
-      return;
-    }
-    var total=0;
-    tb.innerHTML=d.returns.map(function(r){
-      total+=r.amount;
-      var dt=(r.record_date||r.created_at||'').slice(0,10);
-      var cls=r.amount>=0?'positive':'negative';
-      var sign=r.amount>=0?'+':'';
-      var badge=getDictLabel('return_type',r.return_type)||returnLabels[r.return_type]||r.return_type;
-      return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td style="font-weight:700;color:'+(r.amount>=0?'var(--danger)':'var(--success)')+';">'+sign+fmtMoney(r.amount)+'</td><td><span class="return-badge '+cls+'">'+badge+'</span></td><td style="color:var(--muted);font-size:0.83rem;">'+(r.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delReturn(\''+r.id+'\')">删除</button></td></tr>';
-    }).join('');
-    document.getElementById('return-count').textContent='共 '+d.returns.length+' 条';
-    document.getElementById('return-summary').style.display='block';
-    document.getElementById('return-total-text').textContent='累计总收益：'+(total>=0?'+':'')+fmtMoney(total);
-    document.getElementById('return-detail-text').textContent='收益不修改账户本金余额，仅统计理财盈亏';
-  }catch(e){console.error(e)}
 }
 
-function openReturnModal(){
-  if(!selectedReturnAccId){toast('请先选择一个账户','error');return}
-  document.getElementById('m-ret-date').value=getTodayStr();
-  document.getElementById('m-ret-amt').value='';
-  fillDictSelect(document.getElementById('m-ret-type'),'return_type','请选择类型');
-  document.getElementById('m-ret-note').value='';
-  document.getElementById('return-modal').classList.add('active');
-}
-
-async function saveReturn(){
-  var accId=selectedReturnAccId;
-  var amt=parseFloat(document.getElementById('m-ret-amt').value)||0;
-  var rt=document.getElementById('m-ret-type').value;
-  var note=document.getElementById('m-ret-note').value.trim();
-  var dateVal=document.getElementById('m-ret-date').value||getTodayStr();
-  if(!accId){toast('请选择账户','error');return}
+async function saveInvReturn(){
+  var amt=parseFloat(document.getElementById('m-inv-ret-amt').value)||0;
+  var rt=document.getElementById('m-inv-ret-type').value;
+  var note=document.getElementById('m-inv-ret-note').value.trim();
+  var dateVal=document.getElementById('m-inv-ret-date').value||getTodayStr();
+  if(!selectedInvForRecord){toast('请选择投资','error');return}
   if(amt===0){toast('收益金额不能为0','error');return}
   try{
-    var r=await fetch(API+'/returns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:accId,amount:amt,return_type:rt,note:note,record_date:dateVal})});
+    var r=await fetch(API+'/returns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,account_id:selectedInvForRecord.account_id,investment_id:selectedInvForRecord.id,amount:amt,return_type:rt,note:note,record_date:dateVal})});
     var d=await r.json();
-    if(d.success){toast('收益录入成功','success');closeModal('return-modal');loadReturns(accId);loadDashboard()}
+    if(d.success){toast('收益录入成功','success');closeModal('inv-return-modal');loadInvestments();loadDashboard();loadAccounts();}
     else{toast(d.message,'error')}
   }catch(e){toast('网络错误','error')}
 }
 
-async function delReturn(id){if(!confirm('确认删除该收益记录？'))return;try{var r=await fetch(API+'/returns/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadReturns(selectedReturnAccId);loadDashboard()}}catch(e){}}
+/* ========== Ledger ========== */
+var ledgerTab = 'account';
+var ledgerAccountFlowsCache = [];
+var ledgerAssetFlowsCache = [];
 
-/* Transfers (划转类型下拉从字典加载) */
+function switchLedgerTab(tab){
+  ledgerTab = tab;
+  document.getElementById('ledger-tab-account').classList.toggle('active', tab==='account');
+  document.getElementById('ledger-tab-asset').classList.toggle('active', tab==='asset');
+  document.getElementById('ledger-panel-account').style.display = tab==='account' ? 'block' : 'none';
+  document.getElementById('ledger-panel-asset').style.display = tab==='asset' ? 'block' : 'none';
+  if(tab==='account') loadAccountFlows(); else loadAssetFlows();
+}
+
+async function loadLedgerFilters(){
+  if(!currentUser) return;
+  try{
+    var r = await fetch(API+'/accounts?user_id='+currentUser.id);
+    var d = await r.json();
+    var accs = d.accounts || [];
+    var sel1 = document.getElementById('ledger-acc-filter');
+    sel1.innerHTML = '<option value="">全部账户</option>' + accs.map(function(a){return '<option value="'+a.id+'">'+a.name+'</option>'}).join('');
+    var sel2 = document.getElementById('ledger-asset-acc-filter');
+    sel2.innerHTML = '<option value="">全部账户</option>' + accs.map(function(a){return '<option value="'+a.id+'">'+a.name+'</option>'}).join('');
+  }catch(e){}
+}
+
+async function loadAccountFlows(){
+  if(!currentUser) return;
+  try{
+    var accId = document.getElementById('ledger-acc-filter').value;
+    var url = API+'/ledger/account-flows?user_id='+currentUser.id;
+    if(accId) url += '&account_id='+accId;
+    var r = await fetch(url);
+    var d = await r.json();
+    ledgerAccountFlowsCache = d.data || [];
+    var tb = document.getElementById('ledger-account-tbody');
+    if(!ledgerAccountFlowsCache.length){
+      tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">暂无数据</td></tr>';
+      return;
+    }
+    tb.innerHTML = ledgerAccountFlowsCache.map(function(row){
+      var amt = row.amount;
+      var color = amt >= 0 ? 'var(--danger)' : 'var(--success)';
+      var typeLabel = row.flow_type==='principal' ? '本金' : '投资';
+      var detail = row.flow_type==='principal' ? getDictLabel(row.source_type.indexOf('spend')!==-1?'principal_spend':'principal_income', row.source_type) : getDictLabel('investment_direction', row.investment_direction);
+      if(row.flow_type==='principal'&&(!detail||detail===row.source_type)){detail=sourceLabels[row.source_type]||row.source_type||'-';}
+      return '<tr><td>'+row.account_name+'</td><td><span class="source-badge">'+typeLabel+'</span></td><td style="font-weight:700;color:'+color+'">'+fmtMoney(amt)+'</td><td>'+detail+'</td><td style="color:var(--muted);font-size:0.83rem">'+(row.note||'-')+'</td><td style="font-size:0.83rem;color:var(--muted)">'+(row.record_date||'-')+'</td></tr>';
+    }).join('');
+  }catch(e){console.error(e)}
+}
+
+async function onAssetAccChange(){
+  var accId = document.getElementById('ledger-asset-acc-filter').value;
+  try{
+    var url = API+'/investments?user_id='+currentUser.id;
+    if(accId) url += '&account_id='+accId;
+    var r = await fetch(url);
+    var d = await r.json();
+    var invs = d.investments || [];
+    var sel = document.getElementById('ledger-asset-inv-filter');
+    sel.innerHTML = '<option value="">全部标的</option>' + invs.map(function(i){return '<option value="'+i.id+'">'+i.name+'</option>'}).join('');
+    loadAssetFlows();
+  }catch(e){}
+}
+
+async function loadAssetFlows(){
+  if(!currentUser) return;
+  try{
+    var accId = document.getElementById('ledger-asset-acc-filter').value;
+    var invId = document.getElementById('ledger-asset-inv-filter').value;
+    var url = API+'/ledger/asset-flows?user_id='+currentUser.id;
+    if(accId) url += '&account_id='+accId;
+    if(invId) url += '&investment_id='+invId;
+    var r = await fetch(url);
+    var d = await r.json();
+    ledgerAssetFlowsCache = d.data || [];
+    var tb = document.getElementById('ledger-asset-tbody');
+    if(!ledgerAssetFlowsCache.length){
+      tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">暂无数据</td></tr>';
+      return;
+    }
+    tb.innerHTML = ledgerAssetFlowsCache.map(function(row){
+      var amt = row.amount;
+      var color = amt >= 0 ? 'var(--danger)' : 'var(--success)';
+      var typeLabel = row.flow_type==='investment' ? '投资' : (row.flow_type==='recovery' ? '回收' : '收益');
+      var detail;
+      if(row.flow_type==='investment'){
+        detail = getDictLabel('investment_direction', row.investment_direction);
+      }else if(row.flow_type==='recovery'){
+        detail = getDictLabel('principal_income', row.source_type);
+        if(!detail||detail===row.source_type){detail=sourceLabels[row.source_type]||row.source_type||'-';}
+      }else{
+        detail = getDictLabel('return_type', row.source_type);
+      }
+      return '<tr><td>'+row.account_name+'</td><td>'+(row.investment_name||'-')+'</td><td><span class="source-badge">'+typeLabel+'</span></td><td style="font-weight:700;color:'+color+'">'+fmtMoney(amt)+'</td><td>'+(detail||'-')+'</td><td style="color:var(--muted);font-size:0.83rem">'+(row.note||'-')+'</td><td style="font-size:0.83rem;color:var(--muted)">'+(row.record_date||'-')+'</td></tr>';
+    }).join('');
+  }catch(e){console.error(e)}
+}
+
+function exportLedgerData(){
+  var data = ledgerTab==='account' ? ledgerAccountFlowsCache : ledgerAssetFlowsCache;
+  var exportData = data.map(function(row){
+    return {account_name:row.account_name, investment_name:row.investment_name||'', flow_type:row.flow_type, amount:row.amount, type_label:'', note:row.note||'', record_date:row.record_date||''};
+  });
+  exportTable(ledgerTab+'_flows', exportData);
+}
+
+/* ========== Transfers ========== */
 var transferAccountsCache=[];
-async function loadTransfers(){try{var r=await fetch(API+'/transfers?user_id='+currentUser.id),d=await r.json();if(!d.success)return;var tb=document.getElementById('transfers-tbody');
-if(!d.transfers.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">暂无划转记录</td></tr>';document.getElementById('transfer-count').textContent='';document.getElementById('transfer-summary').style.display='none';return}
-var totalFee=0;tb.innerHTML=d.transfers.map(function(t){totalFee+=t.fee;var dt=new Date(t.created_at).toLocaleString('zh-CN');var trLabel=getDictLabel('transfer_type',t.transfer_type)||transferLabels[t.transfer_type]||t.transfer_type;return'<tr><td style="font-size:0.83rem;color:var(--muted);">'+dt+'</td><td><span class="source-badge">'+trLabel+'</span></td><td>'+t.from_account_name+'</td><td>'+t.to_account_name+'</td><td style="font-weight:700;color:var(--danger);">'+fmtMoney(t.amount)+'</td><td style="color:var(--success);">'+(t.fee?fmtMoney(t.fee):'-')+'</td><td style="color:var(--muted);font-size:0.83rem;">'+(t.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delTransfer(\''+t.id+'\')">删除</button></td></tr>'}).join('');
-document.getElementById('transfer-count').textContent='共 '+d.transfers.length+' 条';
-document.getElementById('transfer-summary').style.display='block';document.getElementById('transfer-total-text').textContent='累计手续费：'+fmtMoney(totalFee);document.getElementById('transfer-detail-text').textContent='划转不改变总本金，仅调整账户间分布'}catch(e){console.error(e)}}
+async function loadTransfers(){
+  try{
+    var r=await fetch(API+'/transfers?user_id='+currentUser.id),d=await r.json();
+    if(!d.success)return;
+    var tb=document.getElementById('transfers-tbody');
+    if(!d.transfers||!d.transfers.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">暂无划转记录</td></tr>';document.getElementById('transfer-count').textContent='';document.getElementById('transfer-summary').style.display='none';return}
+    var totalFee=0;
+    tb.innerHTML=d.transfers.map(function(t){
+      totalFee+=t.fee||0;
+      var dt=new Date(t.created_at).toLocaleString('zh-CN');
+      var trLabel=getDictLabel('transfer_type',t.transfer_type)||transferLabels[t.transfer_type]||t.transfer_type;
+      return'<tr><td style="font-size:0.83rem;color:var(--muted)">'+dt+'</td><td><span class="source-badge">'+trLabel+'</span></td><td>'+(t.from_account_name||'-')+'</td><td>'+(t.to_account_name||'-')+'</td><td style="font-weight:700;color:var(--danger)">'+fmtMoney(t.amount)+'</td><td style="color:var(--success)">'+(t.fee?fmtMoney(t.fee):'-')+'</td><td style="color:var(--muted);font-size:0.83rem">'+(t.note||'-')+'</td><td><button class="btn btn-danger btn-sm" onclick="delTransfer(\''+t.id+'\')">删除</button></td></tr>';
+    }).join('');
+    document.getElementById('transfer-count').textContent='共 '+d.transfers.length+' 条';
+    document.getElementById('transfer-summary').style.display='block';
+    document.getElementById('transfer-total-text').textContent='累计手续费：'+fmtMoney(totalFee);
+    document.getElementById('transfer-detail-text').textContent='划转不改变总本金，仅调整账户间分布';
+  }catch(e){console.error(e)}
+}
 
-async function loadTransferAccounts(){try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();transferAccountsCache=d.accounts||[]}catch(e){}}
+async function loadTransferAccounts(){
+  try{var r=await fetch(API+'/accounts?user_id='+currentUser.id),d=await r.json();transferAccountsCache=d.accounts||[]}catch(e){}
+}
 
-function getFilteredAccounts(typeFilter){return transferAccountsCache.filter(function(a){return a.type!=='debt'&&(typeFilter==='all'||typeFilter==='cash'&&['bank','cash'].indexOf(a.type)!==-1||typeFilter==='fund'&&['fund','stock'].indexOf(a.type)!==-1)})}
+function getFilteredTransferAccounts(typeFilter){
+  return transferAccountsCache.filter(function(a){return a.type!=='debt'&&(typeFilter==='all'||typeFilter==='cash'&&['bank','cash'].indexOf(a.type)!==-1||typeFilter==='fund'&&['fund','stock'].indexOf(a.type)!==-1)})
+}
 
-function populateTransferSelects(){var type=document.getElementById('m-tr-type').value;var fromSel=document.getElementById('m-tr-from');var toSel=document.getElementById('m-tr-to');var fromOpts,toOpts;
-if(type==='cash_transfer'){fromOpts=getFilteredAccounts('cash');toOpts=getFilteredAccounts('cash')}
-else if(type==='cash_to_fund'){fromOpts=getFilteredAccounts('cash');toOpts=getFilteredAccounts('fund')}
-else if(type==='fund_to_cash'){fromOpts=getFilteredAccounts('fund');toOpts=getFilteredAccounts('cash')}
-else if(type==='fund_transfer'){fromOpts=getFilteredAccounts('fund');toOpts=getFilteredAccounts('fund')}
-else{fromOpts=getFilteredAccounts('all');toOpts=getFilteredAccounts('all')}
-function render(opts){return opts.map(function(a){return'<option value="'+a.id+'">'+a.name+'（余额 '+fmtMoney(a.amount)+'）</option>'}).join('')}
-fromSel.innerHTML=render(fromOpts);toSel.innerHTML=render(toOpts)}
+function populateTransferSelects(){
+  var type=document.getElementById('m-tr-type').value;
+  var fromSel=document.getElementById('m-tr-from');
+  var toSel=document.getElementById('m-tr-to');
+  var fromOpts,toOpts;
+  if(type==='cash_transfer'){fromOpts=getFilteredTransferAccounts('cash');toOpts=getFilteredTransferAccounts('cash')}
+  else if(type==='cash_to_fund'){fromOpts=getFilteredTransferAccounts('cash');toOpts=getFilteredTransferAccounts('fund')}
+  else if(type==='fund_to_cash'){fromOpts=getFilteredTransferAccounts('fund');toOpts=getFilteredTransferAccounts('cash')}
+  else if(type==='fund_transfer'){fromOpts=getFilteredTransferAccounts('fund');toOpts=getFilteredTransferAccounts('fund')}
+  else{fromOpts=getFilteredTransferAccounts('all');toOpts=getFilteredTransferAccounts('all')}
+  function render(opts){return opts.map(function(a){return'<option value="'+a.id+'">'+a.name+'（余额 '+fmtMoney(a.amount)+'）</option>'}).join('')}
+  fromSel.innerHTML=render(fromOpts);toSel.innerHTML=render(toOpts);
+}
 
 function onTransferTypeChange(){populateTransferSelects()}
 
@@ -802,11 +2048,18 @@ async function openTransferModal(){
   document.getElementById('transfer-modal').classList.add('active');
 }
 
-async function saveTransfer(){var fromId=document.getElementById('m-tr-from').value,toId=document.getElementById('m-tr-to').value,amt=parseFloat(document.getElementById('m-tr-amt').value)||0,fee=parseFloat(document.getElementById('m-tr-fee').value)||0,type=document.getElementById('m-tr-type').value,note=document.getElementById('m-tr-note').value.trim();if(!fromId||!toId){toast('请选择转出和转入账户','error');return}if(fromId===toId){toast('转出和转入账户不能相同','error');return}if(amt<=0){toast('划转金额必须大于0','error');return}if(fee<0){toast('手续费不能为负数','error');return}try{var r=await fetch(API+'/transfers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,from_account_id:fromId,to_account_id:toId,amount:amt,fee:fee,transfer_type:type,note:note})}),d=await r.json();if(d.success){toast('划转成功','success');closeModal('transfer-modal');loadTransfers();loadAccounts();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}}
+async function saveTransfer(){
+  var fromId=document.getElementById('m-tr-from').value,toId=document.getElementById('m-tr-to').value,amt=parseFloat(document.getElementById('m-tr-amt').value)||0,fee=parseFloat(document.getElementById('m-tr-fee').value)||0,type=document.getElementById('m-tr-type').value,note=document.getElementById('m-tr-note').value.trim();
+  if(!fromId||!toId){toast('请选择转出和转入账户','error');return}
+  if(fromId===toId){toast('转出和转入账户不能相同','error');return}
+  if(amt<=0){toast('划转金额必须大于0','error');return}
+  if(fee<0){toast('手续费不能为负数','error');return}
+  try{var r=await fetch(API+'/transfers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,from_account_id:fromId,to_account_id:toId,amount:amt,fee:fee,transfer_type:type,note:note})}),d=await r.json();if(d.success){toast('划转成功','success');closeModal('transfer-modal');loadTransfers();loadAccounts();loadDashboard()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}
+}
 
 async function delTransfer(id){if(!confirm('确认删除？划转金额和手续费将回滚至原账户。'))return;try{var r=await fetch(API+'/transfers/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadTransfers();loadAccounts();loadDashboard()}}catch(e){}}
 
-/* Dict Management (修改3) */
+/* ========== Settings - Dicts ========== */
 async function loadDictItems(){
   var dictType=document.getElementById('dict-type-select').value;
   try{
@@ -860,19 +2113,242 @@ async function deleteDictItem(id){
   }catch(e){toast('网络错误','error')}
 }
 
-/* Reset Data (修改4) */
-async function resetData(){
-  if(!confirm('确认重置？'))return;
-  if(!confirm('这将删除您所有账户、本金、收益、划转和快照数据，此操作不可恢复！\n\n再次确认：是否继续？'))return;
+/* ========== Settings - Formulas (需求7/8改造) ========== */
+/* 需求8: 加载公式变量列表 */
+async function loadFormulaVars(){
   try{
-    var r=await fetch(API+'/reset-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id})});
+    var r=await fetch(API+'/formula-vars?user_id='+currentUser.id);
     var d=await r.json();
-    if(d.success){toast('数据已重置','success');selectedPrincipalAccId=null;selectedReturnAccId=null;loadAccounts();loadDashboard();loadDictCache()}
+    formulaVarsCache=d.variables||d.data||[];
+  }catch(e){formulaVarsCache=[]}
+}
+
+function renderFormulaVarHints(){
+  var container=document.getElementById('formula-var-list');
+  if(!formulaVarsCache.length){container.style.display='none';return}
+  container.style.display='block';
+  container.innerHTML='<div style="font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:6px">可用变量</div>'+
+    formulaVarsCache.map(function(v){
+      var vn=v.key||v.var_name||v.name;
+      var cn=v.label||v.cn_name;
+      return '<div class="var-item"><span class="vn">'+vn+'</span><span class="vc">'+cn+'</span><span class="vd">'+(v.description||'')+'</span></div>';
+    }).join('');
+}
+
+/* 需求8: 公式变量自动补全 */
+function setupFormulaAutocomplete(){
+  var exprInput=document.getElementById('m-fm-expr');
+  if(!exprInput)return;
+  var exprGroup=exprInput.closest('.form-group');
+  if(!exprGroup)return;
+  var hintDiv=document.createElement('div');
+  hintDiv.id='formula-autocomplete-hint';
+  hintDiv.style.cssText='position:absolute;z-index:310;background:var(--bg2);border:1px solid var(--rule);border-radius:8px;max-height:150px;overflow-y:auto;display:none;box-shadow:var(--shadow);min-width:200px';
+  exprGroup.style.position='relative';
+  exprGroup.appendChild(hintDiv);
+
+  exprInput.addEventListener('input',function(){
+    var val=this.value;
+    var cursorPos=this.selectionStart;
+    var textBefore=val.substring(0,cursorPos);
+    var match=textBefore.match(/(\w*)$/);
+    if(!match||!match[1]){hintDiv.style.display='none';return}
+    var prefix=match[1].toLowerCase();
+    var matched=formulaVarsCache.filter(function(v){
+      var vn=(v.key||v.var_name||v.name||'').toLowerCase();
+      var cn=(v.label||v.cn_name||'').toLowerCase();
+      return vn.indexOf(prefix)!==-1||cn.indexOf(prefix)!==-1;
+    });
+    if(!matched.length){hintDiv.style.display='none';return}
+    hintDiv.innerHTML=matched.map(function(v){
+      var vn=v.key||v.var_name||v.name;
+      var cn=v.label||v.cn_name;
+      return '<div style="padding:6px 12px;cursor:pointer;font-size:0.82rem" onmousedown="insertFormulaVar(\''+vn+'\')"><strong>'+vn+'</strong> - '+cn+' ('+(v.description||'')+')'+'</div>';
+    }).join('');
+    hintDiv.style.display='block';
+  });
+  exprInput.addEventListener('blur',function(){setTimeout(function(){hintDiv.style.display='none'},200)});
+}
+
+function insertFormulaVar(varName){
+  var input=document.getElementById('m-fm-expr');
+  var val=input.value;
+  var cursorPos=input.selectionStart;
+  var textBefore=val.substring(0,cursorPos);
+  var newText=textBefore.replace(/\w*$/,'')+varName;
+  input.value=newText+val.substring(cursorPos);
+  input.focus();
+  document.getElementById('formula-autocomplete-hint').style.display='none';
+}
+
+/* 需求7: 公式列表 - 内置只读 + 用户自定义 */
+async function loadFormulas(){
+  try{
+    var r=await fetch(API+'/formulas?user_id='+currentUser.id);
+    var d=await r.json();
+    var container=document.getElementById('formula-list');
+    if(!d.success||!d.formulas||!d.formulas.length){container.innerHTML='<p style="color:var(--muted)">暂无公式</p>';return}
+    container.innerHTML='<table class="data-table"><thead><tr><th>名称</th><th>表达式</th><th>备注</th><th>操作</th></tr></thead><tbody>'+d.formulas.map(function(f){
+      var isBuiltin=!!f.is_builtin;
+      var builtinTag=isBuiltin?'<span class="builtin-badge">内置</span> ':'';
+      var exprHtml=f.formula||f.expression||'-';
+      /* 需求8: 变量tooltip */
+      var tooltipHtml='';
+      if(formulaVarsCache.length && exprHtml && exprHtml!=='-'){
+        var expr=exprHtml;
+        var usedVars=formulaVarsCache.filter(function(v){
+          var vn=v.key||v.var_name||v.name;
+          return expr.indexOf(vn)!==-1;
+        });
+        if(usedVars.length){
+          tooltipHtml=' <span class="tooltip-trigger">[变量说明]<span class="tooltip-content">'+
+            usedVars.map(function(v){return '<strong>'+(v.key||v.var_name||v.name)+'</strong>: '+(v.label||v.cn_name)+' - '+(v.description||'')}).join('<br>')+
+            '</span></span>';
+        }
+      }
+      var actions='<button class="btn btn-ghost btn-sm" onclick="openEditFormula(\''+f.id+'\')">编辑</button> <button class="btn btn-danger btn-sm" onclick="delFormula(\''+f.id+'\')">删除</button>';
+      if(isBuiltin) actions='<span style="color:var(--muted);font-size:0.82rem">只读</span>';
+      return'<tr>' +
+        '<td>'+builtinTag+(f.name||'-')+'</td>' +
+        '<td style="font-family:monospace;font-size:0.85rem">'+exprHtml+tooltipHtml+'</td>' +
+        '<td>'+(f.description||f.note||'-')+'</td>' +
+        '<td>'+actions+'</td></tr>';
+    }).join('')+'</tbody></table>';
+  }catch(e){console.error(e)}
+}
+
+function openFormulaModal(){
+  editFormulaId=null;
+  document.getElementById('formula-modal-title').textContent='新增公式';
+  document.getElementById('m-fm-name').value='';
+  document.getElementById('m-fm-expr').value='';
+  document.getElementById('m-fm-note').value='';
+  document.getElementById('m-fm-name').removeAttribute('readonly');
+  document.getElementById('m-fm-expr').removeAttribute('readonly');
+  document.getElementById('m-fm-note').removeAttribute('readonly');
+  /* 需求8: 加载变量列表 */
+  loadFormulaVars().then(function(){renderFormulaVarHints()});
+  document.getElementById('formula-modal').classList.add('active');
+  setTimeout(setupFormulaAutocomplete,100);
+}
+
+async function openEditFormula(id){
+  editFormulaId=id;
+  try{
+    var r=await fetch(API+'/formulas?user_id='+currentUser.id);
+    var d=await r.json();
+    if(!d.success)return;
+    var f=d.formulas.find(function(x){return x.id===id});
+    if(!f){toast('公式未找到','error');return}
+    /* 需求7: 内置公式只读 */
+    var isBuiltin=!!f.is_builtin;
+    document.getElementById('formula-modal-title').textContent=isBuiltin?'查看内置公式':'编辑公式';
+    document.getElementById('m-fm-name').value=f.name||'';
+    document.getElementById('m-fm-expr').value=f.expression||f.formula||'';
+    document.getElementById('m-fm-note').value=f.note||f.description||'';
+    if(isBuiltin){
+      document.getElementById('m-fm-name').setAttribute('readonly','readonly');
+      document.getElementById('m-fm-expr').setAttribute('readonly','readonly');
+      document.getElementById('m-fm-note').setAttribute('readonly','readonly');
+      document.getElementById('m-fm-name').style.background='#F3F4F6';
+      document.getElementById('m-fm-expr').style.background='#F3F4F6';
+      document.getElementById('m-fm-note').style.background='#F3F4F6';
+    }else{
+      document.getElementById('m-fm-name').removeAttribute('readonly');
+      document.getElementById('m-fm-expr').removeAttribute('readonly');
+      document.getElementById('m-fm-note').removeAttribute('readonly');
+      document.getElementById('m-fm-name').style.background='';
+      document.getElementById('m-fm-expr').style.background='';
+      document.getElementById('m-fm-note').style.background='';
+    }
+    loadFormulaVars().then(function(){renderFormulaVarHints()});
+    document.getElementById('formula-modal').classList.add('active');
+    setTimeout(setupFormulaAutocomplete,100);
+  }catch(e){toast('加载失败','error')}
+}
+
+async function saveFormula(){
+  /* 需求7: 不允许编辑内置公式 */
+  if(editFormulaId){
+    var formulas=await (await fetch(API+'/formulas?user_id='+currentUser.id)).json();
+    var f=(formulas.formulas||[]).find(function(x){return x.id===editFormulaId});
+    if(f&&f.is_builtin){toast('内置公式不可编辑','error');return}
+  }
+  var name=document.getElementById('m-fm-name').value.trim();
+  var expr=document.getElementById('m-fm-expr').value.trim();
+  var note=document.getElementById('m-fm-note').value.trim();
+  if(!name||!expr){toast('请填写公式名称和表达式','error');return}
+  try{
+    var r,d;
+    if(editFormulaId){r=await fetch(API+'/formulas/'+editFormulaId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,expression:expr,note:note})});}
+    else{r=await fetch(API+'/formulas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,name:name,expression:expr,note:note})});}
+    d=await r.json();
+    if(d.success){toast(editFormulaId?'更新成功':'添加成功','success');closeModal('formula-modal');loadFormulas();}
     else{toast(d.message,'error')}
   }catch(e){toast('网络错误','error')}
 }
 
-/* Toast */
+async function delFormula(id){
+  /* 需求7: 不允许删除内置公式 */
+  try{
+    var r=await fetch(API+'/formulas?user_id='+currentUser.id);
+    var d=await r.json();
+    var f=(d.formulas||[]).find(function(x){return x.id===id});
+    if(f&&f.is_builtin){toast('内置公式不可删除','error');return}
+  }catch(e){}
+  if(!confirm('确认删除该公式？'))return;
+  try{var r=await fetch(API+'/formulas/'+id,{method:'DELETE'}),d=await r.json();if(d.success){toast('删除成功','success');loadFormulas()}else{toast(d.message,'error')}}catch(e){toast('网络错误','error')}
+}
+
+/* ========== Export / Import ========== */
+async function exportTable(tableName,data,template){
+  try{
+    var payload={table_name:tableName,user_id:currentUser.id};
+    if(data) payload.data=data;
+    if(template) payload.template=true;
+    var r=await fetch(API+'/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    var d=await r.json();
+    if(d.success&&d.data){
+      var a=document.createElement('a');
+      a.href='data:application/octet-stream;base64,'+d.data;
+      a.download=d.filename||tableName+'.xlsx';
+      a.click();
+      toast('导出成功','success');
+    }else{toast(d.message||'导出失败','error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+async function importTable(tableName,inputId){
+  var fileInput=document.getElementById(inputId);
+  var file=fileInput.files[0];
+  if(!file){return}
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    var base64=e.target.result.split(',')[1];
+    try{
+      var r=await fetch(API+'/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({table_name:tableName,user_id:currentUser.id,data:base64})});
+      var d=await r.json();
+      if(d.success){toast('导入成功：'+d.imported+' 条','success');fileInput.value='';nav(document.querySelector('.page.active').id.replace('page-',''));}
+      else{toast(d.message||'导入失败','error');fileInput.value='';}
+    }catch(err){toast('网络错误','error');fileInput.value='';}
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ========== Reset ========== */
+async function resetData(){
+  if(!confirm('确认重置？'))return;
+  if(!confirm('这将删除您所有账户、投资、本金、收益、划转和快照数据，此操作不可恢复！\n\n再次确认：是否继续？'))return;
+  try{
+    var r=await fetch(API+'/reset-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id})});
+    var d=await r.json();
+    if(d.success){toast('数据已重置','success');accountsCache=[];investmentsCache=[];loadAccounts();loadDashboard();loadInvestments();loadDictCache();}
+    else{toast(d.message,'error')}
+  }catch(e){toast('网络错误','error')}
+}
+
+/* ========== Utilities ========== */
+function closeModal(id){document.getElementById(id).classList.remove('active')}
 function toast(msg,type){var el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type+' show';setTimeout(function(){el.classList.remove('show')},2500)}
 
 /* ECharts Loader */
@@ -880,7 +2356,12 @@ var echartsLoaded=false,echartsCB=[];
 function onEChartsReady(fn){if(echartsLoaded){try{fn()}catch(e){}}else{echartsCB.push(fn)}}
 var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js';s.async=true;s.onload=function(){echartsLoaded=true;echartsCB.forEach(function(fn){try{fn()}catch(e){}})};s.onerror=function(){console.warn('ECharts CDN failed')};document.head.appendChild(s);
 
-document.addEventListener('keydown',function(e){if(e.key==='Enter'&&!currentUser)handleAuth();if(e.key==='Escape'){closeModal('acc-modal');closeModal('principal-modal');closeModal('spend-modal');closeModal('transfer-modal');closeModal('return-modal');closeModal('trend-modal')}});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!currentUser)handleAuth();
+  if(e.key==='Escape'){
+    ['acc-modal','inv-modal','inv-principal-modal','inv-return-modal','inv-sell-modal','inv-close-modal','transfer-modal','formula-modal','trend-modal','principal-modal','spend-modal','security-modal','acc-ledger-modal','acc-ledger-pr-modal','inv-ledger-modal'].forEach(function(id){closeModal(id)});
+  }
+});
 </script>
 </body>
 </html>
