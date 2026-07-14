@@ -56,6 +56,12 @@ def get_db():
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA journal_mode=WAL")
         g.db.execute("PRAGMA foreign_keys=ON")
+    # 运行时校验：若核心表不存在，自动触发初始化（兼容 WSGI 延迟导入等场景）
+    try:
+        g.db.execute("SELECT 1 FROM users LIMIT 1")
+    except sqlite3.OperationalError:
+        print(f"[INIT] Database not initialized, running init_db()... DB_PATH={DB_PATH}")
+        init_db()
     return g.db
 
 @app.teardown_appcontext
