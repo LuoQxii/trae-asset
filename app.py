@@ -288,7 +288,8 @@ def init_db():
         ('investment_type', 'wealth', '理财', 4),
         ('investment_type', 'futures', '期货', 5),
         ('investment_type', 'forex', '外汇', 6),
-        ('investment_type', 'other', '其他', 7),
+        ('investment_type', 'deposit', '存款', 7),
+        ('investment_type', 'other', '其他', 8),
         # investment_direction
         ('investment_direction', 'buy', '买入', 1),
         ('investment_direction', 'fixed', '定投', 2),
